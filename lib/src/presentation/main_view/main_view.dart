@@ -33,8 +33,7 @@ import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 //import 'package:render/render.dart';
 
-import 'package:flutter_screen_recorder_ffmpeg/screen_recorder.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:screen_recorder/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
   /// editor custom font families
@@ -170,22 +169,26 @@ class _MainViewState extends State<MainView> {
   }
 
   ////////new
-  bool hide4Record = false;
-  ScreenRecorderController controller = ScreenRecorderController();
-  String outPath = '';
   bool _showDialog = false;
+  bool hide4Record = false;
+  bool _recording = false;
+  bool _exporting = false;
+
+  ScreenRecorderController controller = ScreenRecorderController();
+  bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
   recordWidget(int? duration) async {
     controller.start();
-    startTimer();
+    startTimer(duration);
     setState(() {
       _showDialog = true;
+      _recording = true;
     });
   }
 
-  void startTimer() {
-    Duration oneSec = const Duration(seconds: 1);
+  void startTimer(int? duration) {
+    Duration oneSec = const Duration(seconds: duration ?? 5);
     Timer.periodic(
       oneSec,
       (Timer timer) async {
@@ -195,31 +198,18 @@ class _MainViewState extends State<MainView> {
 
             timer.cancel();
           });
-          var path = await controller.export(renderType: RenderType.gif);
-          if (path['success'] == true) {
-            setState(() {
-              outPath = path["${widget.appname}_render"]; //path['outPath'];
-            });
-            await ImageGallerySaver.saveFile(outPath, name: "${DateTime.now()}")
-                .then((value) {
-              if (value['isSuccess'] == true) {
-                debugPrint(value['filePath']);
-                Fluttertoast.showToast(msg: '👍'); //'Successfully saved'
-              } else {
-                debugPrint(value['errorMessage']);
-                Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
-              }
-            }).whenComplete(() {
-              setState(() {
-                _showDialog = false;
-              });
-            });
-          } else {
-            setState(() {
-              outPath = path['msg'];
-              _showDialog = false;
-            });
+          setState(() {
+            _exporting = true;
+          });
+          var gif = await controller.exporter.exportGif();
+          if (gif == null) {
+            throw Exception();
           }
+          //setState(() => _exporting = false);
+          setState(() {
+            _exporting = false;
+            _showDialog = false;
+          });
         } else {
           setState(() {
             _timerStart--;
@@ -291,6 +281,8 @@ class _MainViewState extends State<MainView> {
                     mainView: Column(
                       children: [
                         ScreenRecorder(
+                            //  height: 500,
+                            //  width: 500,
                             controller: controller,
                             child: Expanded(
                               child: Stack(
