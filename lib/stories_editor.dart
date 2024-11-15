@@ -26,6 +26,7 @@ class StoriesEditor extends StatefulWidget {
 
   /// giphy api key
   final Widget? permissionWidget;
+  final String appname;
   final String giphyKey;
   final String? giphyRating;
   final String? giphyLanguage;
@@ -62,6 +63,7 @@ class StoriesEditor extends StatefulWidget {
 
   StoriesEditor({
     Key? key,
+    required this.appname,
     required this.giphyKey,
     required this.onDone,
     required this.permissionWidget,
@@ -124,6 +126,7 @@ class _StoriesEditorState extends State<StoriesEditor> {
             ChangeNotifierProvider(create: (_) => TextEditingNotifier()),
           ],
           child: MainView(
+            appname: widget.appname,
             giphyKey: widget.giphyKey,
             giphyLanguage: widget.giphyLanguage,
             giphyRating: widget.giphyRating,
