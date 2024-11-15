@@ -25,4 +25,7 @@ class EditableItem {
 
   /// Gif
   GiphyGif gif = GiphyGif(id: '0');
+
+    // - new
+  Duration? duration = null;
 }
