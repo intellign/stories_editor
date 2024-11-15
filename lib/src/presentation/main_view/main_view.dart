@@ -215,7 +215,7 @@ class _MainViewState extends State<MainView> {
             _exporting = false;
             _showDialog = false;
           });
-          saveImage(gif);
+          if (gif != null) saveImage(gif!);
         } else {
           setState(() {
             _timerStart--;
