@@ -32,6 +32,7 @@ import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.da
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 //import 'package:render/render.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:screen_recorder/screen_recorder.dart';
 
@@ -203,13 +204,18 @@ class _MainViewState extends State<MainView> {
           });
           var gif = await controller.exporter.exportGif();
           if (gif == null) {
-            throw Exception();
+            //  throw Exception();
+            setState(() {
+              _exporting = false;
+              _showDialog = false;
+            });
           }
           //setState(() => _exporting = false);
           setState(() {
             _exporting = false;
             _showDialog = false;
           });
+          saveImage(gif);
         } else {
           setState(() {
             _timerStart--;
@@ -217,6 +223,30 @@ class _MainViewState extends State<MainView> {
         }
       },
     );
+  }
+
+  Future<String> saveImage(Uint8List bytes) async {
+    String path = "";
+    try {
+      int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
+      final String dir = (await getApplicationDocumentsDirectory()).path;
+
+      //////   Directory root = await getTemporaryDirectory();
+      /////   String directoryPath = '${root.path}/appName';
+      String directoryPath = '${dir}/appName';
+      // Create the directory if it doesn't exist
+      /////    await Directory(directoryPath).create(recursive: true);
+      /////   String filePath = '$directoryPath/$timestamp.gif';
+      String filePath = '$dir/stories_creator$timestamp.gif';
+      final file = await File(filePath).writeAsBytes(bytes);
+      path = file.path;
+      if (widget.onDone != null) {
+        widget.onDone!(path);
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return path;
   }
 
   /////
@@ -521,9 +551,11 @@ class _MainViewState extends State<MainView> {
                             permissionWidget: widget.permissionWidget,
                             contentKey: contentKey,
                             onDone: (bytes) {
-                              setState(() {
-                                widget.onDone!(bytes);
-                              });
+                              if (widget.onDone != null) {
+                                setState(() {
+                                  widget.onDone!(bytes);
+                                });
+                              }
                             },
                             onDoneButtonStyle: widget.onDoneButtonStyle,
                             editorBackgroundColor: widget.editorBackgroundColor,
