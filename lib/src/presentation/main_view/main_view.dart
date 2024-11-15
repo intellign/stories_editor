@@ -311,8 +311,8 @@ class _MainViewState extends State<MainView> {
                     mainView: Column(
                       children: [
                         ScreenRecorder(
-                            //  height: 500,
-                            //  width: 500,
+                                height: MediaQuery.of(context).size.height,
+                            width: MediaQuery.of(context).size.width,
                             controller: controller,
                             child: Expanded(
                               child: Stack(
