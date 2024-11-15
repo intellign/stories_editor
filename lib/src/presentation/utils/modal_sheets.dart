@@ -42,13 +42,11 @@ Future createGiphyItem(
 }
 
 /// custom exit dialog
-Future<bool> exitDialog({
-  required context,
-  required contentKey,
-  bool? showSaveDraftOption,
-  Function(String draftPath)? saveDraftCallback,
-  Function(int? duration)? recordCallback,
-}) async {
+Future<bool> exitDialog(
+    {required context,
+    required contentKey,
+    bool? showSaveDraftOption,
+    Function(String draftPath)? saveDraftCallback}) async {
   return (await showDialog(
         context: context,
         barrierColor: Colors.black38,
@@ -138,37 +136,23 @@ Future<bool> exitDialog({
                                     listen: false);
                             if (_paintingProvider.lines.isNotEmpty ||
                                 _widgetProvider.draggableWidget.isNotEmpty) {
-                              if (recordCallback != null &&
-                                  (_widgetProvider.draggableWidget.indexWhere(
-                                          (element) =>
-                                              element.type == ItemType.gif ||
-                                              element.type == ItemType.video ||
-                                              element.type == ItemType.audio) >
-                                      -1)) {
-                               await   recordCallback!(null);
-                                 _dispose(
-                                      context: dialogContext,
-                                      message: 'Successfully saved');//add error- check response
-                              } else {
-                                /// save image
-                                var response = await takePicture(
-                                    contentKey: contentKey,
-                                    context: context,
-                                    saveToGallery: saveDraftCallback != null
-                                        ? false
-                                        : true);
-                                if (response) {
-                                  _dispose(
-                                      context: dialogContext,
-                                      message: 'Successfully saved');
-                                  if (saveDraftCallback != null &&
-                                      response is String) {
-                                    saveDraftCallback(response);
-                                  }
-                                } else {
-                                  _dispose(
-                                      context: dialogContext, message: 'Error');
+                              /// save image
+                              var response = await takePicture(
+                                  contentKey: contentKey,
+                                  context: context,
+                                  saveToGallery:
+                                      saveDraftCallback != null ? false : true);
+                              if (response) {
+                                _dispose(
+                                    context: dialogContext,
+                                    message: 'Successfully saved');
+                                if (saveDraftCallback != null &&
+                                    response is String) {
+                                  saveDraftCallback(response);
                                 }
+                              } else {
+                                _dispose(
+                                    context: dialogContext, message: 'Error');
                               }
                             } else {
                               _dispose(
