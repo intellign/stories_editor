@@ -10,7 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  
+  flutter_screen_recorder_ffmpeg:
+    git:
+      path: https://github.com/camilo1498/flutter_widget_recorder_ffmpeg
+
   gallery_media_picker:
     git:
       url: https://github.com/intellign/gallery_media_picker.git
