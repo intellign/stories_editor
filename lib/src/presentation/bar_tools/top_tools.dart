@@ -92,7 +92,6 @@ class _TopToolsState extends State<TopTools> {
                     onTap: () async {
                       if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
-                        var response;
                         if (widget.recordCallback != null &&
                             (itemNotifier.draggableWidget.singleWhere(
                                 (element) =>
@@ -101,16 +100,17 @@ class _TopToolsState extends State<TopTools> {
                                     element.type == ItemType.audio))) {
                           widget.recordCallback(null);
                         } else {
-                          response = await takePicture(
+                          var response = await takePicture(
                               contentKey: widget.contentKey,
                               context: context,
                               saveToGallery: true);
-                        }
-                        if (response) {
-                          Fluttertoast.showToast(
-                              msg: '👍'); //'Successfully saved'
-                        } else {
-                          Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
+
+                          if (response) {
+                            Fluttertoast.showToast(
+                                msg: '👍'); //'Successfully saved'
+                          } else {
+                            Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
+                          }
                         }
                       }
                     }),
