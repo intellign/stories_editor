@@ -8,7 +8,6 @@ import 'package:stories_editor/src/domain/providers/notifiers/scroll_notifier.da
 import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/color_selector.dart';
-import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 class BottomTools extends StatelessWidget {
   final GlobalKey contentKey;
@@ -18,16 +17,12 @@ class BottomTools extends StatelessWidget {
 
   /// editor background color
   final Color? editorBackgroundColor;
-
-  final Function(int? duration)? recordCallback;
-
   const BottomTools(
       {Key? key,
       required this.contentKey,
       required this.onDone,
       this.onDoneButtonStyle,
       this.permissionWidget,
-      this.recordCallback,
       this.editorBackgroundColor})
       : super(key: key);
 
@@ -148,29 +143,16 @@ class BottomTools extends StatelessWidget {
                             child: AnimatedOnTapButton(
                                 onTap: () async {
                                   String pngUri;
-                                  if (recordCallback != null &&
-                                      (itemNotifier.draggableWidget.indexWhere(
-                                              (element) =>
-                                                  element.type ==
-                                                      ItemType.gif ||
-                                                  element.type ==
-                                                      ItemType.video ||
-                                                  element.type ==
-                                                      ItemType.audio) >
-                                          -1)) {
-                                    recordCallback!(null);
-                                  } else {
-                                    await takePicture(
-                                            contentKey: contentKey,
-                                            context: context,
-                                            saveToGallery: false)
-                                        .then((bytes) {
-                                      if (bytes != null) {
-                                        pngUri = bytes;
-                                        onDone(pngUri);
-                                      } else {}
-                                    });
-                                  }
+                                  await takePicture(
+                                          contentKey: contentKey,
+                                          context: context,
+                                          saveToGallery: false)
+                                      .then((bytes) {
+                                    if (bytes != null) {
+                                      pngUri = bytes;
+                                      onDone(pngUri);
+                                    } else {}
+                                  });
                                 },
                                 child: onDoneButtonStyle ??
                                     Container(
