@@ -311,7 +311,7 @@ class _MainViewState extends State<MainView> {
                     mainView: Column(
                       children: [
                         ScreenRecorder(
-                                height: MediaQuery.of(context).size.height,
+                            height: MediaQuery.of(context).size.height,
                             width: MediaQuery.of(context).size.width,
                             controller: controller,
                             child: Expanded(
@@ -559,6 +559,15 @@ class _MainViewState extends State<MainView> {
                             },
                             onDoneButtonStyle: widget.onDoneButtonStyle,
                             editorBackgroundColor: widget.editorBackgroundColor,
+                            recordCallback: (duration) async {
+                              setState(() {
+                                hide4Record = true;
+                              });
+                              await recordWidget(duration);
+                              setState(() {
+                                hide4Record = false;
+                              });
+                            },
                           ),
                       ],
                     ),
@@ -648,10 +657,20 @@ class _MainViewState extends State<MainView> {
     else if (!controlNotifier.isTextEditing && !controlNotifier.isPainting) {
       return widget.onBackPress ??
           exitDialog(
-              context: context,
-              contentKey: contentKey,
-              showSaveDraftOption: widget.showSaveDraftOption,
-              saveDraftCallback: widget.saveDraftCallback);
+            context: context,
+            contentKey: contentKey,
+            showSaveDraftOption: widget.showSaveDraftOption,
+            saveDraftCallback: widget.saveDraftCallback,
+            recordCallback: (duration) async {
+              setState(() {
+                hide4Record = true;
+              });
+              await recordWidget(duration);
+              setState(() {
+                hide4Record = false;
+              });
+            },
+          );
     }
     return false;
   }
