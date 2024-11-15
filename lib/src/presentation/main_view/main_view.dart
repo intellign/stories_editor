@@ -225,7 +225,7 @@ class _MainViewState extends State<MainView> {
     );
   }
 
-  Future<String> saveImage(Uint8List bytes) async {
+  Future<String> saveImage(List<int> bytes) async {
     String path = "";
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
