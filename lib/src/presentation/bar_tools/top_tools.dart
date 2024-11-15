@@ -26,8 +26,7 @@ class TopTools extends StatefulWidget {
     required this.context,
     this.showSaveDraftOption,
     this.saveDraftCallback,
-        this.recordCallback,
-
+    this.recordCallback,
     this.giphyRating,
     this.giphyLanguage,
   }) : super(key: key);
@@ -59,10 +58,12 @@ class _TopToolsState extends State<TopTools> {
                     backGroundColor: Colors.black12,
                     onTap: () async {
                       var res = await exitDialog(
-                          context: widget.context,
-                          contentKey: widget.contentKey,
-                          showSaveDraftOption: widget.showSaveDraftOption,
-                          saveDraftCallback: widget.saveDraftCallback);
+                        context: widget.context,
+                        contentKey: widget.contentKey,
+                        showSaveDraftOption: widget.showSaveDraftOption,
+                        saveDraftCallback: widget.saveDraftCallback,
+                        recordCallback: widget.recordCallback,
+                      );
                       if (res) {
                         Navigator.pop(context);
                       }
@@ -91,7 +92,7 @@ class _TopToolsState extends State<TopTools> {
                     ),
                     backGroundColor: Colors.black12,
                     onTap: () async {
-                       if (paintingNotifier.lines.isNotEmpty ||
+                      if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
                         if (widget.recordCallback != null &&
                             (itemNotifier.draggableWidget.indexWhere(
