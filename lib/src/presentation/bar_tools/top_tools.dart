@@ -9,6 +9,7 @@ import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
 import 'package:stories_editor/src/presentation/utils/modal_sheets.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/tool_button.dart';
+import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 class TopTools extends StatefulWidget {
   final GlobalKey contentKey;
@@ -17,6 +18,7 @@ class TopTools extends StatefulWidget {
   final String? giphyRating;
   final String? giphyLanguage;
   final Function(String draftPath)? saveDraftCallback;
+  final Function(int? duration)? recordCallback;
 
   const TopTools({
     Key? key,
@@ -24,6 +26,7 @@ class TopTools extends StatefulWidget {
     required this.context,
     this.showSaveDraftOption,
     this.saveDraftCallback,
+    this.recordCallback,
     this.giphyRating,
     this.giphyLanguage,
   }) : super(key: key);
@@ -89,14 +92,25 @@ class _TopToolsState extends State<TopTools> {
                     onTap: () async {
                       if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
-                        var response = await takePicture(
-                            contentKey: widget.contentKey,
-                            context: context,
-                            saveToGallery: true);
-                        if (response) {
-                          Fluttertoast.showToast(msg: 'Successfully saved');
+                        var response;
+                        if (widget.recordCallback != null &&
+                            (itemNotifier.draggableWidget.singleWhere(
+                                (element) =>
+                                    element.type == ItemType.gif ||
+                                    element.type == ItemType.video ||
+                                    element.type == ItemType.audio))) {
+                          widget.recordCallback(null);
                         } else {
-                          Fluttertoast.showToast(msg: 'Error');
+                          response = await takePicture(
+                              contentKey: widget.contentKey,
+                              context: context,
+                              saveToGallery: true);
+                        }
+                        if (response) {
+                          Fluttertoast.showToast(
+                              msg: '👍'); //'Successfully saved'
+                        } else {
+                          Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
                         }
                       }
                     }),
