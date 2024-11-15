@@ -185,7 +185,7 @@ class _MainViewState extends State<MainView> {
   }
 
   void startTimer(int? duration) {
-    Duration oneSec = const Duration(seconds: duration ?? 5);
+    Duration oneSec = Duration(seconds: duration ?? 5);
     Timer.periodic(
       oneSec,
       (Timer timer) async {
