@@ -1,4 +1,4 @@
-enum ItemType { image, text, video, gif }
+enum ItemType { image, text, video, gif, audio, location }
 
 enum PaintingType { pen, marker, neon }
 
