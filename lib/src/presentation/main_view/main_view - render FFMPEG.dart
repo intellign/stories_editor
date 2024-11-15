@@ -178,7 +178,7 @@ class _MainViewState extends State<MainView> {
   int _timerStart = 5;
   recordWidget(int? duration) async {
     controller.start();
-    startTimer();
+    startTimer(duration);
     setState(() {
       _showDialog = true;
     });
