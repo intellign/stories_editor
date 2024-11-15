@@ -504,7 +504,7 @@ class _MainViewState extends State<MainView> {
                                               widget.showSaveDraftOption,
                                           saveDraftCallback:
                                               widget.saveDraftCallback,
-                                          recordCallback: (duration) async {
+                                          /*  recordCallback: (duration) async {
                                             setState(() {
                                               hide4Record = true;
                                             });
@@ -513,6 +513,7 @@ class _MainViewState extends State<MainView> {
                                               hide4Record = false;
                                             });
                                           },
+                                          */
                                         )),
                                   ),
 
@@ -559,7 +560,7 @@ class _MainViewState extends State<MainView> {
                             },
                             onDoneButtonStyle: widget.onDoneButtonStyle,
                             editorBackgroundColor: widget.editorBackgroundColor,
-                            recordCallback: (duration) async {
+                            /*   recordCallback: (duration) async {
                               setState(() {
                                 hide4Record = true;
                               });
@@ -568,6 +569,7 @@ class _MainViewState extends State<MainView> {
                                 hide4Record = false;
                               });
                             },
+                            */
                           ),
                       ],
                     ),
@@ -661,7 +663,7 @@ class _MainViewState extends State<MainView> {
             contentKey: contentKey,
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
-            recordCallback: (duration) async {
+            /*   recordCallback: (duration) async {
               setState(() {
                 hide4Record = true;
               });
@@ -670,6 +672,7 @@ class _MainViewState extends State<MainView> {
                 hide4Record = false;
               });
             },
+            */
           );
     }
     return false;
