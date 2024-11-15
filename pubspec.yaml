@@ -12,7 +12,7 @@ dependencies:
 
   flutter_screen_recorder_ffmpeg:
     git:
-      url: https://github.com/camilo1498/flutter_widget_recorder_ffmpeg
+      url: https://github.com/intellign/flutter_widget_recorder_ffmpeg
 
   gallery_media_picker:
     git:
