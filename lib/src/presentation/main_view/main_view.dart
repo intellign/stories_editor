@@ -45,6 +45,7 @@ class MainView extends StatefulWidget {
   final Widget? permissionWidget;
 
   /// giphy api key
+  final String appname;
   final String giphyKey;
   final String? giphyRating;
   final String? giphyLanguage;
@@ -81,6 +82,7 @@ class MainView extends StatefulWidget {
 
   MainView({
     Key? key,
+    required this.appname,
     required this.giphyKey,
     required this.onDone,
     required this.permissionWidget,
@@ -196,7 +198,7 @@ class _MainViewState extends State<MainView> {
           var path = await controller.export(renderType: RenderType.gif);
           if (path['success'] == true) {
             setState(() {
-              outPath = path['outPath'];
+              outPath = path["${widget.appname}_render"]; //path['outPath'];
             });
             await ImageGallerySaver.saveFile(outPath, name: "${DateTime.now()}")
                 .then((value) {
