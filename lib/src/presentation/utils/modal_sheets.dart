@@ -145,7 +145,10 @@ Future<bool> exitDialog({
                                               element.type == ItemType.video ||
                                               element.type == ItemType.audio) >
                                       -1)) {
-                                recordCallback!(null);
+                               await   recordCallback!(null);
+                                 _dispose(
+                                      context: dialogContext,
+                                      message: 'Successfully saved');//add error- check response
                               } else {
                                 /// save image
                                 var response = await takePicture(
