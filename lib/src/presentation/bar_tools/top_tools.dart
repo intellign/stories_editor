@@ -93,11 +93,12 @@ class _TopToolsState extends State<TopTools> {
                       if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
                         if (widget.recordCallback != null &&
-                            (itemNotifier.draggableWidget.singleWhere(
-                                (element) =>
-                                    element.type == ItemType.gif ||
-                                    element.type == ItemType.video ||
-                                    element.type == ItemType.audio))) {
+                            (itemNotifier.draggableWidget.indexWhere(
+                                    (element) =>
+                                        element.type == ItemType.gif ||
+                                        element.type == ItemType.video ||
+                                        element.type == ItemType.audio) >
+                                -1)) {
                           widget.recordCallback(null);
                         } else {
                           var response = await takePicture(
