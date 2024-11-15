@@ -58,10 +58,12 @@ class _TopToolsState extends State<TopTools> {
                     backGroundColor: Colors.black12,
                     onTap: () async {
                       var res = await exitDialog(
-                          context: widget.context,
-                          contentKey: widget.contentKey,
-                          showSaveDraftOption: widget.showSaveDraftOption,
-                          saveDraftCallback: widget.saveDraftCallback);
+                        context: widget.context,
+                        contentKey: widget.contentKey,
+                        showSaveDraftOption: widget.showSaveDraftOption,
+                        saveDraftCallback: widget.saveDraftCallback,
+                        recordCallback: widget.recordCallback,
+                      );
                       if (res) {
                         Navigator.pop(context);
                       }
