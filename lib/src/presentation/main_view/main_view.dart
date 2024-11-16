@@ -33,7 +33,7 @@ import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 //import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:screen_recorder/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
@@ -181,16 +181,16 @@ class _MainViewState extends State<MainView> {
   bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
-  recordWidget(int? duration, bool doneCallbackBool) async {
+  recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     controller.start();
     setState(() {
       _showDialog = true;
       _recording = true;
     });
-    startTimer(duration, doneCallbackBool);
+    startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
-  void startTimer(int? duration, bool doneCallbackBool) {
+  void startTimer(int? duration, bool doneCallbackBool, bool saveToGallery) {
     Duration oneSec = Duration(seconds: duration ?? 5);
     Timer.periodic(
       oneSec,
@@ -215,7 +215,8 @@ class _MainViewState extends State<MainView> {
           }
           //setState(() => _exporting = false);
 
-          if (gif != null) await saveImage(gif!, doneCallbackBool);
+          if (gif != null)
+            await saveImage(gif!, doneCallbackBool, saveToGallery);
           setState(() {
             _exporting = false;
             _showDialog = false;
@@ -229,7 +230,8 @@ class _MainViewState extends State<MainView> {
     );
   }
 
-  Future<String> saveImage(List<int> bytes, bool doneCallbackBool) async {
+  Future<String> saveImage(
+      List<int> bytes, bool doneCallbackBool, bool saveToGallery) async {
     String path = "";
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
@@ -242,10 +244,19 @@ class _MainViewState extends State<MainView> {
       /////    await Directory(directoryPath).create(recursive: true);
       /////   String filePath = '$directoryPath/$timestamp.gif';
       String filePath = '$dir/stories_creator$timestamp.gif';
-      final file = await File(filePath).writeAsBytes(bytes);
+
+      File capturedFile = File(filePath);
+      final file = await capturedFile.writeAsBytes(bytes);
+
+      if (saveToGallery) {
+        final result0 = await ImageGallerySaver.saveFile(file.path,
+            name: "stories_creator${timestamp}.gif");
+      }
+
       path = file.path;
       if (!doneCallbackBool) {
-        Fluttertoast.showToast(msg: '👍'); //'Successfully saved'
+        Fluttertoast.showToast(
+            msg: '👍', gravity: ToastGravity.CENTER); //'Successfully saved'
       }
 
       if (widget.onDone != null && doneCallbackBool) {
@@ -253,7 +264,8 @@ class _MainViewState extends State<MainView> {
       }
     } catch (e) {
       debugPrint(e.toString());
-      Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
+      Fluttertoast.showToast(
+          msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
     }
     return path;
   }
@@ -510,13 +522,13 @@ class _MainViewState extends State<MainView> {
                                     showSaveDraftOption:
                                         widget.showSaveDraftOption,
                                     saveDraftCallback: widget.saveDraftCallback,
-                                    recordCallback:
-                                        (duration, doneCallbackBool) async {
+                                    recordCallback: (duration, doneCallbackBool,
+                                        saveToGallery) async {
                                       setState(() {
                                         hide4Record = true;
                                       });
-                                      await recordWidget(
-                                          duration, doneCallbackBool);
+                                      await recordWidget(duration,
+                                          doneCallbackBool, saveToGallery);
                                       setState(() {
                                         hide4Record = false;
                                       });
@@ -561,11 +573,13 @@ class _MainViewState extends State<MainView> {
                           },
                           onDoneButtonStyle: widget.onDoneButtonStyle,
                           editorBackgroundColor: widget.editorBackgroundColor,
-                          recordCallback: (duration, doneCallbackBool) async {
+                          recordCallback: (duration, doneCallbackBool,
+                              saveToGallery) async {
                             setState(() {
                               hide4Record = true;
                             });
-                            await recordWidget(duration, true);
+                            await recordWidget(
+                                duration, doneCallbackBool, saveToGallery);
                             setState(() {
                               hide4Record = false;
                             });
@@ -664,11 +678,11 @@ class _MainViewState extends State<MainView> {
             contentKey: contentKey,
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
-            recordCallback: (duration, doneCallbackBool) async {
+            recordCallback: (duration, doneCallbackBool, saveToGallery) async {
               setState(() {
                 hide4Record = true;
               });
-              await recordWidget(duration, doneCallbackBool);
+              await recordWidget(duration, doneCallbackBool, saveToGallery);
               setState(() {
                 hide4Record = false;
               });
