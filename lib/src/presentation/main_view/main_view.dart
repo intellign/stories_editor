@@ -176,8 +176,9 @@ class _MainViewState extends State<MainView> {
   bool _recording = false;
   bool _exporting = false;
 
-  ScreenRecorderController controller =
-      ScreenRecorderController(); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
+  ScreenRecorderController controller = ScreenRecorderController(
+      skipFramesBetweenCaptures:
+          1); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
   bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
