@@ -9,7 +9,6 @@ import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
 import 'package:stories_editor/src/presentation/utils/modal_sheets.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/tool_button.dart';
-import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 class TopTools extends StatefulWidget {
   final GlobalKey contentKey;
@@ -56,11 +55,10 @@ class _TopToolsState extends State<TopTools> {
                     backGroundColor: Colors.black12,
                     onTap: () async {
                       var res = await exitDialog(
-                        context: widget.context,
-                        contentKey: widget.contentKey,
-                        showSaveDraftOption: widget.showSaveDraftOption,
-                        saveDraftCallback: widget.saveDraftCallback,
-                      );
+                          context: widget.context,
+                          contentKey: widget.contentKey,
+                          showSaveDraftOption: widget.showSaveDraftOption,
+                          saveDraftCallback: widget.saveDraftCallback);
                       if (res) {
                         Navigator.pop(context);
                       }
@@ -95,12 +93,10 @@ class _TopToolsState extends State<TopTools> {
                             contentKey: widget.contentKey,
                             context: context,
                             saveToGallery: true);
-
                         if (response) {
-                          Fluttertoast.showToast(
-                              msg: '👍'); //'Successfully saved'
+                          Fluttertoast.showToast(msg: 'Successfully saved');
                         } else {
-                          Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
+                          Fluttertoast.showToast(msg: 'Error');
                         }
                       }
                     }),
