@@ -62,7 +62,6 @@ class _TopToolsState extends State<TopTools> {
                         contentKey: widget.contentKey,
                         showSaveDraftOption: widget.showSaveDraftOption,
                         saveDraftCallback: widget.saveDraftCallback,
-                        recordCallback: widget.recordCallback,
                       );
                       if (res) {
                         Navigator.pop(context);
