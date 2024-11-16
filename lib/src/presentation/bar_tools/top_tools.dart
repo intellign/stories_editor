@@ -18,7 +18,6 @@ class TopTools extends StatefulWidget {
   final String? giphyRating;
   final String? giphyLanguage;
   final Function(String draftPath)? saveDraftCallback;
-  final Function(int? duration)? recordCallback;
 
   const TopTools({
     Key? key,
@@ -26,7 +25,6 @@ class TopTools extends StatefulWidget {
     required this.context,
     this.showSaveDraftOption,
     this.saveDraftCallback,
-    this.recordCallback,
     this.giphyRating,
     this.giphyLanguage,
   }) : super(key: key);
@@ -93,26 +91,16 @@ class _TopToolsState extends State<TopTools> {
                     onTap: () async {
                       if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
-                        if (widget.recordCallback != null &&
-                            (itemNotifier.draggableWidget.indexWhere(
-                                    (element) =>
-                                        element.type == ItemType.gif ||
-                                        element.type == ItemType.video ||
-                                        element.type == ItemType.audio) >
-                                -1)) {
-                          widget.recordCallback!(null);
-                        } else {
-                          var response = await takePicture(
-                              contentKey: widget.contentKey,
-                              context: context,
-                              saveToGallery: true);
+                        var response = await takePicture(
+                            contentKey: widget.contentKey,
+                            context: context,
+                            saveToGallery: true);
 
-                          if (response) {
-                            Fluttertoast.showToast(
-                                msg: '👍'); //'Successfully saved'
-                          } else {
-                            Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
-                          }
+                        if (response) {
+                          Fluttertoast.showToast(
+                              msg: '👍'); //'Successfully saved'
+                        } else {
+                          Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
                         }
                       }
                     }),
