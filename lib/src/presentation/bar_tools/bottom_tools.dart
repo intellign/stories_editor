@@ -15,7 +15,8 @@ class BottomTools extends StatelessWidget {
   final Function(String imageUri) onDone;
   final Widget? onDoneButtonStyle;
   final Widget? permissionWidget;
-  final Function(int? duration, bool doneCallbackBool)? recordCallback;
+  final Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
+      recordCallback;
 
   /// editor background color
   final Color? editorBackgroundColor;
@@ -156,7 +157,7 @@ class BottomTools extends StatelessWidget {
                                                   element.type ==
                                                       ItemType.audio) >
                                           -1)) {
-                                    recordCallback!(null, true);
+                                    recordCallback!(null, true, false);
                                   } else {
                                     await takePicture(
                                             contentKey: contentKey,
