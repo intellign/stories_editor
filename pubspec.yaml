@@ -10,9 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
- # flutter_screen_recorder_ffmpeg:
-  #  git:
-   #   url: https://github.com/intellign/flutter_widget_recorder_ffmpeg
+  flutter_screen_recorder_ffmpeg:
+    git:
+      url: https://github.com/intellign/flutter_widget_recorder_ffmpeg
 
   screen_recorder: ^0.2.0
   
