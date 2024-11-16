@@ -8,7 +8,6 @@ import 'package:stories_editor/src/domain/providers/notifiers/scroll_notifier.da
 import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/color_selector.dart';
-import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 class BottomTools extends StatelessWidget {
   final GlobalKey contentKey;
@@ -18,7 +17,6 @@ class BottomTools extends StatelessWidget {
 
   /// editor background color
   final Color? editorBackgroundColor;
-
   const BottomTools(
       {Key? key,
       required this.contentKey,
@@ -145,7 +143,6 @@ class BottomTools extends StatelessWidget {
                             child: AnimatedOnTapButton(
                                 onTap: () async {
                                   String pngUri;
-
                                   await takePicture(
                                           contentKey: contentKey,
                                           context: context,
