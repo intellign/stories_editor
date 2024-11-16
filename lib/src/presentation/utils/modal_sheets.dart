@@ -42,12 +42,11 @@ Future createGiphyItem(
 }
 
 /// custom exit dialog
-Future<bool> exitDialog({
-  required context,
-  required contentKey,
-  bool? showSaveDraftOption,
-  Function(String draftPath)? saveDraftCallback,
-}) async {
+Future<bool> exitDialog(
+    {required context,
+    required contentKey,
+    bool? showSaveDraftOption,
+    Function(String draftPath)? saveDraftCallback}) async {
   return (await showDialog(
         context: context,
         barrierColor: Colors.black38,
