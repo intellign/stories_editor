@@ -47,7 +47,8 @@ Future<bool> exitDialog({
   required contentKey,
   bool? showSaveDraftOption,
   Function(String draftPath)? saveDraftCallback,
-  Function(int? duration, bool doneCallbackBool)? recordCallback,
+  Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
+      recordCallback,
 }) async {
   return (await showDialog(
         context: context,
@@ -145,7 +146,7 @@ Future<bool> exitDialog({
                                               element.type == ItemType.video ||
                                               element.type == ItemType.audio) >
                                       -1)) {
-                                await recordCallback!(null, false);
+                                await recordCallback!(null, false, false);
                                 _dispose(
                                     context: dialogContext,
                                     message:
