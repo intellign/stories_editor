@@ -34,7 +34,8 @@ import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker
 //import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:screen_recorder/screen_recorder.dart';
+////import 'package:screen_recorder/screen_recorder.dart';
+import 'package:flutter_screen_recorder_ffmpeg/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
   /// editor custom font families
@@ -176,19 +177,101 @@ class _MainViewState extends State<MainView> {
   bool _recording = false;
   bool _exporting = false;
 
-  ScreenRecorderController controller = ScreenRecorderController(
-      skipFramesBetweenCaptures:
-          1); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
-  bool get canExport => controller.exporter.hasFrames;
+  ScreenRecorderController controller = ScreenRecorderController();
+
+  // ScreenRecorderController controller = ScreenRecorderController(); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
+  // bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
+
   recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
+    controller.start();
+    setState(() {
+      _showDialog = true;
+    });
+    await startTimer(duration, doneCallbackBool, saveToGallery);
+  }
+
+  void startTimer(
+      int? duration, bool doneCallbackBool, bool saveToGallery) async {
+    Duration oneSec = Duration(seconds: duration ?? 5);
+    String path = "";
+
+    Timer.periodic(
+      oneSec,
+      (Timer timer) async {
+        if (_timerStart == 0) {
+          setState(() {
+            controller.stop();
+
+            timer.cancel();
+          });
+          var result = await controller.export(renderType: RenderType.gif);
+          if (result['success'] == true) {
+            setState(() {
+              path = result['outPath'];
+            });
+            if (saveToGallery) {
+              await ImageGallerySaver.saveFile(path,
+                      name: "stories_creator${DateTime.now()}")
+                  .then((value) {
+                if (value['isSuccess'] == true) {
+                  debugPrint(value['filePath']);
+
+                  if (!doneCallbackBool) {
+                    Fluttertoast.showToast(
+                        msg: '👍',
+                        gravity: ToastGravity.CENTER); //'Successfully saved'
+                  }
+
+                  if (widget.onDone != null && doneCallbackBool) {
+                    widget.onDone!(path);
+                  }
+                } else {
+                  debugPrint(value['errorMessage']);
+                  Fluttertoast.showToast(
+                      msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+                }
+              }).whenComplete(() {
+                setState(() {
+                  _showDialog = false;
+                });
+              });
+            } else {
+              if (!doneCallbackBool) {
+                Fluttertoast.showToast(
+                    msg: '👍',
+                    gravity: ToastGravity.CENTER); //'Successfully saved'
+              }
+
+              if (widget.onDone != null && doneCallbackBool) {
+                widget.onDone!(path);
+              }
+            }
+          } else {
+            setState(() {
+              path = result['msg'];
+              _showDialog = false;
+            });
+            Fluttertoast.showToast(
+                msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+          }
+        } else {
+          setState(() {
+            _timerStart--;
+          });
+        }
+      },
+    );
+  }
+
+  /* recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     controller.start();
     setState(() {
       _showDialog = true;
       _recording = true;
     });
-    startTimer(duration, doneCallbackBool, saveToGallery);
+   await startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
   void startTimer(int? duration, bool doneCallbackBool, bool saveToGallery) {
@@ -270,6 +353,7 @@ class _MainViewState extends State<MainView> {
     }
     return path;
   }
+  */
 
   /////
 
