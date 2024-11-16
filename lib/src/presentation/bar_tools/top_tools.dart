@@ -18,7 +18,8 @@ class TopTools extends StatefulWidget {
   final String? giphyRating;
   final String? giphyLanguage;
   final Function(String draftPath)? saveDraftCallback;
-  final Function(int? duration, bool doneCallbackBool)? recordCallback;
+  final Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
+      recordCallback;
 
   const TopTools({
     Key? key,
@@ -101,7 +102,7 @@ class _TopToolsState extends State<TopTools> {
                                         element.type == ItemType.video ||
                                         element.type == ItemType.audio) >
                                 -1)) {
-                          widget.recordCallback!(null, false);
+                          widget.recordCallback!(null, false, true);
                         } else {
                           var response = await takePicture(
                               contentKey: widget.contentKey,
