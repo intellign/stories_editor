@@ -203,7 +203,7 @@ class _MainViewState extends State<MainView> {
           setState(() {
             _exporting = true;
           });
-          var gif = await controller.exporter.clear();
+          var gif = await controller.exporter.exportGif();
           if (gif == null) {
             //  throw Exception();
             setState(() {
