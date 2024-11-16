@@ -9,6 +9,7 @@ import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
 import 'package:stories_editor/src/presentation/utils/modal_sheets.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/tool_button.dart';
+import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 class TopTools extends StatefulWidget {
   final GlobalKey contentKey;
@@ -17,6 +18,7 @@ class TopTools extends StatefulWidget {
   final String? giphyRating;
   final String? giphyLanguage;
   final Function(String draftPath)? saveDraftCallback;
+  final Function(int? duration)? recordCallback;
 
   const TopTools({
     Key? key,
@@ -25,6 +27,7 @@ class TopTools extends StatefulWidget {
     this.showSaveDraftOption,
     this.saveDraftCallback,
     this.giphyRating,
+    this.recordCallback,
     this.giphyLanguage,
   }) : super(key: key);
 
@@ -55,10 +58,12 @@ class _TopToolsState extends State<TopTools> {
                     backGroundColor: Colors.black12,
                     onTap: () async {
                       var res = await exitDialog(
-                          context: widget.context,
-                          contentKey: widget.contentKey,
-                          showSaveDraftOption: widget.showSaveDraftOption,
-                          saveDraftCallback: widget.saveDraftCallback);
+                        context: widget.context,
+                        contentKey: widget.contentKey,
+                        showSaveDraftOption: widget.showSaveDraftOption,
+                        saveDraftCallback: widget.saveDraftCallback,
+                        recordCallback: widget.recordCallback,
+                      );
                       if (res) {
                         Navigator.pop(context);
                       }
@@ -89,14 +94,26 @@ class _TopToolsState extends State<TopTools> {
                     onTap: () async {
                       if (paintingNotifier.lines.isNotEmpty ||
                           itemNotifier.draggableWidget.isNotEmpty) {
-                        var response = await takePicture(
-                            contentKey: widget.contentKey,
-                            context: context,
-                            saveToGallery: true);
-                        if (response) {
-                          Fluttertoast.showToast(msg: 'Successfully saved');
+                        if (widget.recordCallback != null &&
+                            (itemNotifier.draggableWidget.indexWhere(
+                                    (element) =>
+                                        element.type == ItemType.gif ||
+                                        element.type == ItemType.video ||
+                                        element.type == ItemType.audio) >
+                                -1)) {
+                          widget.recordCallback!(null);
                         } else {
-                          Fluttertoast.showToast(msg: 'Error');
+                          var response = await takePicture(
+                              contentKey: widget.contentKey,
+                              context: context,
+                              saveToGallery: true);
+
+                          if (response) {
+                            Fluttertoast.showToast(
+                                msg: '👍'); //'Successfully saved'
+                          } else {
+                            Fluttertoast.showToast(msg: '⚠️⚠️'); //'Error'
+                          }
                         }
                       }
                     }),
