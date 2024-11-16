@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,9 @@ import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.da
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 //import 'package:render/render.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:screen_recorder/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
   /// editor custom font families
@@ -164,6 +168,88 @@ class _MainViewState extends State<MainView> {
     super.dispose();
   }
 
+  ////////new
+  bool _showDialog = false;
+  bool hide4Record = false;
+  bool _recording = false;
+  bool _exporting = false;
+
+  ScreenRecorderController controller = ScreenRecorderController();
+  bool get canExport => controller.exporter.hasFrames;
+
+  int _timerStart = 5;
+  recordWidget(int? duration) async {
+    controller.start();
+    startTimer(duration);
+    setState(() {
+      _showDialog = true;
+      _recording = true;
+    });
+  }
+
+  void startTimer(int? duration) {
+    Duration oneSec = Duration(seconds: duration ?? 5);
+    Timer.periodic(
+      oneSec,
+      (Timer timer) async {
+        if (_timerStart == 0) {
+          setState(() {
+            controller.stop();
+
+            timer.cancel();
+          });
+          setState(() {
+            _exporting = true;
+          });
+          var gif = await controller.exporter.exportGif();
+          if (gif == null) {
+            //  throw Exception();
+            setState(() {
+              _exporting = false;
+              _showDialog = false;
+            });
+          }
+          //setState(() => _exporting = false);
+          setState(() {
+            _exporting = false;
+            _showDialog = false;
+          });
+          if (gif != null) saveImage(gif!);
+        } else {
+          setState(() {
+            _timerStart--;
+          });
+        }
+      },
+    );
+  }
+
+  Future<String> saveImage(List<int> bytes) async {
+    String path = "";
+    try {
+      int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
+      final String dir = (await getApplicationDocumentsDirectory()).path;
+
+      //////   Directory root = await getTemporaryDirectory();
+      /////   String directoryPath = '${root.path}/appName';
+      String directoryPath = '${dir}/appName';
+      // Create the directory if it doesn't exist
+      /////    await Directory(directoryPath).create(recursive: true);
+      /////   String filePath = '$directoryPath/$timestamp.gif';
+      String filePath = '$dir/stories_creator$timestamp.gif';
+      final file = await File(filePath).writeAsBytes(bytes);
+      path = file.path;
+      if (widget.onDone != null) {
+        widget.onDone!(path);
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return path;
+  }
+
+  /////
+
   @override
   Widget build(BuildContext context) {
     final ScreenUtil screenUtil = ScreenUtil();
@@ -274,84 +360,96 @@ class _MainViewState extends State<MainView> {
                                       child: GestureDetector(
                                         onScaleStart: _onScaleStart,
                                         onScaleUpdate: _onScaleUpdate,
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            /// in this case photo view works as a main background container to manage
-                                            /// the gestures of all movable items.
-                                            PhotoView.customChild(
-                                              child: Container(),
-                                              backgroundDecoration:
-                                                  const BoxDecoration(
-                                                      color:
-                                                          Colors.transparent),
-                                            ),
+                                        child: ScreenRecorder(
+                                            height: MediaQuery.of(context)
+                                                .size
+                                                .height,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            controller: controller,
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                /// in this case photo view works as a main background container to manage
+                                                /// the gestures of all movable items.
+                                                PhotoView.customChild(
+                                                  child: Container(),
+                                                  backgroundDecoration:
+                                                      const BoxDecoration(
+                                                          color: Colors
+                                                              .transparent),
+                                                ),
 
-                                            ///list items
-                                            ...itemProvider.draggableWidget
-                                                .map((editableItem) {
-                                              return DraggableWidget(
-                                                context: context,
-                                                draggableWidget: editableItem,
-                                                onPointerDown: (details) {
-                                                  _updateItemPosition(
-                                                    editableItem,
-                                                    details,
+                                                ///list items
+                                                ...itemProvider.draggableWidget
+                                                    .map((editableItem) {
+                                                  return DraggableWidget(
+                                                    context: context,
+                                                    draggableWidget:
+                                                        editableItem,
+                                                    onPointerDown: (details) {
+                                                      _updateItemPosition(
+                                                        editableItem,
+                                                        details,
+                                                      );
+                                                    },
+                                                    onPointerUp: (details) {
+                                                      _deleteItemOnCoordinates(
+                                                        editableItem,
+                                                        details,
+                                                      );
+                                                    },
+                                                    onPointerMove: (details) {
+                                                      _deletePosition(
+                                                        editableItem,
+                                                        details,
+                                                      );
+                                                    },
                                                   );
-                                                },
-                                                onPointerUp: (details) {
-                                                  _deleteItemOnCoordinates(
-                                                    editableItem,
-                                                    details,
-                                                  );
-                                                },
-                                                onPointerMove: (details) {
-                                                  _deletePosition(
-                                                    editableItem,
-                                                    details,
-                                                  );
-                                                },
-                                              );
-                                            }),
+                                                }),
 
-                                            /// finger paint
-                                            IgnorePointer(
-                                              ignoring: true,
-                                              child: Align(
-                                                alignment: Alignment.topCenter,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            25),
-                                                  ),
-                                                  child: RepaintBoundary(
-                                                    child: SizedBox(
-                                                      width: screenUtil
-                                                          .screenWidth,
-                                                      child: StreamBuilder<
-                                                          List<PaintingModel>>(
-                                                        stream: paintingProvider
-                                                            .linesStreamController
-                                                            .stream,
-                                                        builder: (context,
-                                                            snapshot) {
-                                                          return CustomPaint(
-                                                            painter: Sketcher(
-                                                              lines:
-                                                                  paintingProvider
-                                                                      .lines,
-                                                            ),
-                                                          );
-                                                        },
+                                                /// finger paint
+                                                IgnorePointer(
+                                                  ignoring: true,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(25),
+                                                      ),
+                                                      child: RepaintBoundary(
+                                                        child: SizedBox(
+                                                          width: screenUtil
+                                                              .screenWidth,
+                                                          child: StreamBuilder<
+                                                              List<
+                                                                  PaintingModel>>(
+                                                            stream: paintingProvider
+                                                                .linesStreamController
+                                                                .stream,
+                                                            builder: (context,
+                                                                snapshot) {
+                                                              return CustomPaint(
+                                                                painter:
+                                                                    Sketcher(
+                                                                  lines:
+                                                                      paintingProvider
+                                                                          .lines,
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                              ],
+                                            )),
                                       ),
                                     ),
                                   ),
@@ -392,14 +490,23 @@ class _MainViewState extends State<MainView> {
                             child: Align(
                                 alignment: Alignment.topCenter,
                                 child: TopTools(
-                                    contentKey: contentKey,
-                                    context: context,
-                                    giphyLanguage: widget.giphyLanguage,
-                                    giphyRating: widget.giphyRating,
-                                    showSaveDraftOption:
-                                        widget.showSaveDraftOption,
-                                    saveDraftCallback:
-                                        widget.saveDraftCallback)),
+                                  contentKey: contentKey,
+                                  context: context,
+                                  giphyLanguage: widget.giphyLanguage,
+                                  giphyRating: widget.giphyRating,
+                                  showSaveDraftOption:
+                                      widget.showSaveDraftOption,
+                                  saveDraftCallback: widget.saveDraftCallback,
+                                  recordCallback: (duration) async {
+                                    setState(() {
+                                      hide4Record = true;
+                                    });
+                                    await recordWidget(duration);
+                                    setState(() {
+                                      hide4Record = false;
+                                    });
+                                  },
+                                )),
                           ),
 
                           /// delete item when the item is in position
@@ -439,6 +546,15 @@ class _MainViewState extends State<MainView> {
                         },
                         onDoneButtonStyle: widget.onDoneButtonStyle,
                         editorBackgroundColor: widget.editorBackgroundColor,
+                        recordCallback: (duration) async {
+                          setState(() {
+                            hide4Record = true;
+                          });
+                          await recordWidget(duration);
+                          setState(() {
+                            hide4Record = false;
+                          });
+                        },
                       ),
                   ],
                 ),
@@ -513,10 +629,20 @@ class _MainViewState extends State<MainView> {
     else if (!controlNotifier.isTextEditing && !controlNotifier.isPainting) {
       return widget.onBackPress ??
           exitDialog(
-              context: context,
-              contentKey: contentKey,
-              showSaveDraftOption: widget.showSaveDraftOption,
-              saveDraftCallback: widget.saveDraftCallback);
+            context: context,
+            contentKey: contentKey,
+            showSaveDraftOption: widget.showSaveDraftOption,
+            saveDraftCallback: widget.saveDraftCallback,
+            recordCallback: (duration) async {
+              setState(() {
+                hide4Record = true;
+              });
+              await recordWidget(duration);
+              setState(() {
+                hide4Record = false;
+              });
+            },
+          );
     }
     return false;
   }
