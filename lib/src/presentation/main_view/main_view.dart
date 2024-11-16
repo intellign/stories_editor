@@ -555,15 +555,6 @@ class _MainViewState extends State<MainView> {
                             },
                             onDoneButtonStyle: widget.onDoneButtonStyle,
                             editorBackgroundColor: widget.editorBackgroundColor,
-                            recordCallback: (duration) async {
-                              setState(() {
-                                hide4Record = true;
-                              });
-                              await recordWidget(duration);
-                              setState(() {
-                                hide4Record = false;
-                              });
-                            },
                           ),
                       ],
                     ),
