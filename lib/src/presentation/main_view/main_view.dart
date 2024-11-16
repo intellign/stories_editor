@@ -648,15 +648,6 @@ class _MainViewState extends State<MainView> {
             contentKey: contentKey,
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
-            recordCallback: (duration) async {
-              setState(() {
-                hide4Record = true;
-              });
-              await recordWidget(duration);
-              setState(() {
-                hide4Record = false;
-              });
-            },
           );
     }
     return false;
