@@ -191,7 +191,7 @@ class _MainViewState extends State<MainView> {
     await startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
-  void startTimer(
+   startTimer(
       int? duration, bool doneCallbackBool, bool saveToGallery) async {
     Duration oneSec = Duration(seconds: duration ?? 5);
     String path = "";
