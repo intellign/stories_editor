@@ -169,7 +169,6 @@ class _MainViewState extends State<MainView> {
 
   @override
   void dispose() {
-    controller.exporter.clear();
     super.dispose();
   }
 
