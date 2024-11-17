@@ -431,11 +431,8 @@ class _MainViewState extends State<MainView> {
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
                             ScreenRecorder(
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                controller: controller,
-                                background: Colors.black,
-                                child: GestureDetector(
+                  controller: controller,
+                  child: GestureDetector(
                                   onScaleStart: _onScaleStart,
                                   onScaleUpdate: _onScaleUpdate,
                                   onTap: () {
