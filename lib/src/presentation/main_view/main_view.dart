@@ -205,7 +205,7 @@ class _MainViewState extends State<MainView> {
 
             timer.cancel();
           });
-          var result = await controller.export(renderType: RenderType.gif);
+          var result = await controller.export(renderType: RenderType.video);
           if (result['success'] == true) {
             setState(() {
               path = result['outPath'];
