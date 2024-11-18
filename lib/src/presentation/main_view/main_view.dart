@@ -34,7 +34,8 @@ import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker
 //import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:screen_recorder/screen_recorder.dart';
+////import 'package:screen_recorder/screen_recorder.dart';
+import 'package:flutter_screen_recorder_ffmpeg/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
   /// editor custom font families
@@ -166,7 +167,6 @@ class _MainViewState extends State<MainView> {
 
   @override
   void dispose() {
-    controller.exporter.clear();
     super.dispose();
   }
 
@@ -176,23 +176,26 @@ class _MainViewState extends State<MainView> {
   bool _recording = false;
   bool _exporting = false;
 
-  ScreenRecorderController controller = ScreenRecorderController(
-      skipFramesBetweenCaptures:
-          1); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
-  bool get canExport => controller.exporter.hasFrames;
+  ScreenRecorderController controller = ScreenRecorderController();
+
+  // ScreenRecorderController controller = ScreenRecorderController(); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
+  // bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
+
   recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     controller.start();
     setState(() {
       _showDialog = true;
-      _recording = true;
     });
-    startTimer(duration, doneCallbackBool, saveToGallery);
+    await startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
-  void startTimer(int? duration, bool doneCallbackBool, bool saveToGallery) {
+   startTimer(
+      int? duration, bool doneCallbackBool, bool saveToGallery) async {
     Duration oneSec = Duration(seconds: duration ?? 5);
+    String path = "";
+
     Timer.periodic(
       oneSec,
       (Timer timer) async {
@@ -202,26 +205,56 @@ class _MainViewState extends State<MainView> {
 
             timer.cancel();
           });
-          setState(() {
-            _exporting = true;
-          });
-          var gif = await controller.exporter.exportGif();
-          if (gif == null) {
-            //  throw Exception();
+          var result = await controller.export(renderType: RenderType.gif);
+          if (result['success'] == true) {
             setState(() {
-              _exporting = false;
+              path = result['outPath'];
+            });
+            if (saveToGallery) {
+              await ImageGallerySaver.saveFile(path,
+                      name: "stories_creator${DateTime.now()}")
+                  .then((value) {
+                if (value['isSuccess'] == true) {
+                  debugPrint(value['filePath']);
+
+                  if (!doneCallbackBool) {
+                    Fluttertoast.showToast(
+                        msg: '👍',
+                        gravity: ToastGravity.CENTER); //'Successfully saved'
+                  }
+
+                  if (widget.onDone != null && doneCallbackBool) {
+                    widget.onDone!(path);
+                  }
+                } else {
+                  debugPrint(value['errorMessage']);
+                  Fluttertoast.showToast(
+                      msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+                }
+              }).whenComplete(() {
+                setState(() {
+                  _showDialog = false;
+                });
+              });
+            } else {
+              if (!doneCallbackBool) {
+                Fluttertoast.showToast(
+                    msg: '👍',
+                    gravity: ToastGravity.CENTER); //'Successfully saved'
+              }
+
+              if (widget.onDone != null && doneCallbackBool) {
+                widget.onDone!(path);
+              }
+            }
+          } else {
+            setState(() {
+              path = result['msg'];
               _showDialog = false;
             });
-            return;
+            Fluttertoast.showToast(
+                msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
           }
-          //setState(() => _exporting = false);
-
-          if (gif != null)
-            await saveImage(gif!, doneCallbackBool, saveToGallery);
-          setState(() {
-            _exporting = false;
-            _showDialog = false;
-          });
         } else {
           setState(() {
             _timerStart--;
@@ -230,48 +263,6 @@ class _MainViewState extends State<MainView> {
       },
     );
   }
-
-  Future<String> saveImage(
-      List<int> bytes, bool doneCallbackBool, bool saveToGallery) async {
-    String path = "";
-    try {
-      int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
-      final String dir = (await getApplicationDocumentsDirectory()).path;
-
-      //////   Directory root = await getTemporaryDirectory();
-      /////   String directoryPath = '${root.path}/${widget.appname}';
-      String directoryPath = '${dir}/${widget.appname}';
-      // Create the directory if it doesn't exist
-      /////    await Directory(directoryPath).create(recursive: true);
-      /////   String filePath = '$directoryPath/$timestamp.gif';
-      String filePath = '$dir/stories_creator$timestamp.gif';
-
-      File capturedFile = File(filePath);
-      final file = await capturedFile.writeAsBytes(bytes);
-
-      if (saveToGallery) {
-        final result0 = await ImageGallerySaver.saveFile(file.path,
-            name: "stories_creator${timestamp}.gif");
-      }
-
-      path = file.path;
-      if (!doneCallbackBool) {
-        Fluttertoast.showToast(
-            msg: '👍', gravity: ToastGravity.CENTER); //'Successfully saved'
-      }
-
-      if (widget.onDone != null && doneCallbackBool) {
-        widget.onDone!(path);
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      Fluttertoast.showToast(
-          msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
-    }
-    return path;
-  }
-
-  /////
 
   @override
   Widget build(BuildContext context) {
@@ -345,10 +336,7 @@ class _MainViewState extends State<MainView> {
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
                             ScreenRecorder(
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
                                 controller: controller,
-                                background: Colors.black,
                                 child: GestureDetector(
                                   onScaleStart: _onScaleStart,
                                   onScaleUpdate: _onScaleUpdate,
