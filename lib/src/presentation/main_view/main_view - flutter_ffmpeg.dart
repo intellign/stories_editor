@@ -1,5 +1,3 @@
-/*
-
 // ignore_for_file: must_be_immutable
 
 import 'dart:io';
@@ -193,7 +191,7 @@ class _MainViewState extends State<MainView> {
     await startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
-  void startTimer(
+   startTimer(
       int? duration, bool doneCallbackBool, bool saveToGallery) async {
     Duration oneSec = Duration(seconds: duration ?? 5);
     String path = "";
@@ -265,98 +263,6 @@ class _MainViewState extends State<MainView> {
       },
     );
   }
-
-  /* recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
-    controller.start();
-    setState(() {
-      _showDialog = true;
-      _recording = true;
-    });
-   await startTimer(duration, doneCallbackBool, saveToGallery);
-  }
-
-  void startTimer(int? duration, bool doneCallbackBool, bool saveToGallery) {
-    Duration oneSec = Duration(seconds: duration ?? 5);
-    Timer.periodic(
-      oneSec,
-      (Timer timer) async {
-        if (_timerStart == 0) {
-          setState(() {
-            controller.stop();
-
-            timer.cancel();
-          });
-          setState(() {
-            _exporting = true;
-          });
-          var gif = await controller.exporter.exportGif();
-          if (gif == null) {
-            //  throw Exception();
-            setState(() {
-              _exporting = false;
-              _showDialog = false;
-            });
-            return;
-          }
-          //setState(() => _exporting = false);
-
-          if (gif != null)
-            await saveImage(gif!, doneCallbackBool, saveToGallery);
-          setState(() {
-            _exporting = false;
-            _showDialog = false;
-          });
-        } else {
-          setState(() {
-            _timerStart--;
-          });
-        }
-      },
-    );
-  }
-
-  Future<String> saveImage(
-      List<int> bytes, bool doneCallbackBool, bool saveToGallery) async {
-    String path = "";
-    try {
-      int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
-      final String dir = (await getApplicationDocumentsDirectory()).path;
-
-      //////   Directory root = await getTemporaryDirectory();
-      /////   String directoryPath = '${root.path}/${widget.appname}';
-      String directoryPath = '${dir}/${widget.appname}';
-      // Create the directory if it doesn't exist
-      /////    await Directory(directoryPath).create(recursive: true);
-      /////   String filePath = '$directoryPath/$timestamp.gif';
-      String filePath = '$dir/stories_creator$timestamp.gif';
-
-      File capturedFile = File(filePath);
-      final file = await capturedFile.writeAsBytes(bytes);
-
-      if (saveToGallery) {
-        final result0 = await ImageGallerySaver.saveFile(file.path,
-            name: "stories_creator${timestamp}.gif");
-      }
-
-      path = file.path;
-      if (!doneCallbackBool) {
-        Fluttertoast.showToast(
-            msg: '👍', gravity: ToastGravity.CENTER); //'Successfully saved'
-      }
-
-      if (widget.onDone != null && doneCallbackBool) {
-        widget.onDone!(path);
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      Fluttertoast.showToast(
-          msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
-    }
-    return path;
-  }
-  */
-
-  /////
 
   @override
   Widget build(BuildContext context) {
@@ -430,8 +336,8 @@ class _MainViewState extends State<MainView> {
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
                             ScreenRecorder(
-                  controller: controller,
-                  child: GestureDetector(
+                                controller: controller,
+                                child: GestureDetector(
                                   onScaleStart: _onScaleStart,
                                   onScaleUpdate: _onScaleUpdate,
                                   onTap: () {
@@ -876,5 +782,3 @@ class _MainViewState extends State<MainView> {
     HapticFeedback.lightImpact();
   }
 }
-
-*/
