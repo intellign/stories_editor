@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -72,6 +73,13 @@ class _TopToolsState extends State<TopTools> {
                 if (controlNotifier.mediaPath.isEmpty)
                   _selectColor(
                       controlProvider: controlNotifier,
+                      onLongPress: () {
+                        HapticFeedback.heavyImpact();
+
+                        setState(() {
+                          controlNotifier.gradientIndex = 0;
+                        });
+                      },
                       onTap: () {
                         if (controlNotifier.gradientIndex >=
                             controlNotifier.gradientColors!.length - 1) {
@@ -98,8 +106,8 @@ class _TopToolsState extends State<TopTools> {
                         if (widget.recordCallback != null &&
                             (itemNotifier.draggableWidget.indexWhere(
                                     (element) =>
-                                 element.animationType !=
-                                                  TextAnimationType.none ||
+                                        element.animationType !=
+                                            TextAnimationType.none ||
                                         element.type == ItemType.gif ||
                                         element.type == ItemType.video ||
                                         element.type == ItemType.audio) >
@@ -179,11 +187,12 @@ class _TopToolsState extends State<TopTools> {
   }
 
   /// gradient color selector
-  Widget _selectColor({onTap, controlProvider}) {
+  Widget _selectColor({onTap, onLongPress, controlProvider}) {
     return Padding(
       padding: const EdgeInsets.only(left: 5, right: 5, top: 8),
       child: AnimatedOnTapButton(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Container(
           padding: const EdgeInsets.all(2),
           decoration: const BoxDecoration(
