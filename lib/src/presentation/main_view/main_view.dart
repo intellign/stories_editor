@@ -1,8 +1,7 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +34,8 @@ import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker
 //import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-////import 'package:screen_recorder/screen_recorder.dart';
-import 'package:flutter_screen_recorder_ffmpeg/screen_recorder.dart';
-import 'dart:ui' as ui show Image, ImageByteFormat;
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/rendering.dart';
+import 'package:screen_recorder/screen_recorder.dart';
+////import 'package:flutter_screen_recorder_ffmpeg/screen_recorder.dart';
 
 class MainView extends StatefulWidget {
   /// editor custom font families
@@ -174,133 +170,7 @@ class _MainViewState extends State<MainView> {
     super.dispose();
   }
 
-  ///////////////////-------//////////////////////
-  /// key of the content widget to render
-  ///////final GlobalKey _containerKey;
-
-  /// frame callback
-  final SchedulerBinding _binding;
-
-  /// save frames
-  final List<ui.Image> _frames = [];
-
-  /// is recording frames
-  bool _record = false;
-
-  /// start render
-  void start() {
-    /// only start a video, if no recording is in progress
-    if (_record == true) {
-      return;
-    }
-    _record = true;
-    _binding.addPostFrameCallback(postFrameCallback);
-  }
-
-  /// stop render
-  void stop() {
-    _record = false;
-  }
-
-  /// add frame to list
-  void postFrameCallback(Duration timestamp) async {
-    if (_record == false) {
-      return;
-    }
-
-    try {
-      final image = await capture();
-      if (image == null) {
-        debugPrint('capture returned null');
-        return;
-      }
-      _frames.add(image);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-    _binding.addPostFrameCallback(postFrameCallback);
-  }
-
-  /// capture widget to render
-  Future<ui.Image?> capture() async {
-    final renderObject = contentKey.currentContext?.findRenderObject();
-
-    if (renderObject is RenderRepaintBoundary) {
-      final image = await renderObject.toImage(pixelRatio: 3.0);
-      return image;
-    } else {
-      FlutterError.reportError(_noRenderObject());
-    }
-    return null;
-  }
-
-  /// error details
-  FlutterErrorDetails _noRenderObject() {
-    return FlutterErrorDetails(
-      exception: Exception(
-        'contentKey.currentContext is null. '
-        'Thus we can\'t create a screenshot',
-      ),
-      library: 'feedback',
-      context: ErrorDescription(
-        'Tried to find a context to use it to create a screenshot',
-      ),
-    );
-  }
-
-  /// export widget
-  Future<Map<String, dynamic>> export({required RenderType renderType}) async {
-    int timestamp = DateTime.now().millisecondsSinceEpoch.toInt();
-
-    String dir;
-    String imagePath;
-    List<File> imageFiles = [];
-    List<List<int>> imageFilesBytes = [];
-    List<Size> imageFilesSize = [];
-
-    /// get application temp directory
-    Directory appDocDirectory = await getTemporaryDirectory();
-    dir = appDocDirectory.path;
-
-    /// delete last directory
-    if (appDocDirectory.existsSync()) {
-      try {
-        appDocDirectory.deleteSync(recursive: true);
-      } catch (e) {}
-    }
-
-    /// create new directory
-    appDocDirectory.create();
-
-    /// iterate all frames
-    for (int i = 0; i < _frames.length; i++) {
-      /// convert frame to byte data png
-      final val = await _frames[i].toByteData(format: ui.ImageByteFormat.png);
-
-      /// convert frame to buffer list
-      Uint8List pngBytes = val!.buffer.asUint8List();
-
-      /// create temp path for every frame
-      imagePath = '$dir/$i.png';
-
-      /// create image frame in the temp directory
-      File capturedFile = File(imagePath);
-      await capturedFile.writeAsBytes(pngBytes);
-    }
-
-    /// clear frame list
-    _frames.clear();
-
-    /// render frames.png to video/gif
-    var response = await FfmpegProvider().mergeIntoVideo(
-      renderType: renderType,
-    );
-
-    /// return
-    return response;
-  }
-
-  ///////////-----/////////////new
+  ////////new
   bool _showDialog = false;
   bool hide4Record = false;
   bool _recording = false;
@@ -466,185 +336,195 @@ class _MainViewState extends State<MainView> {
                   gridController: scrollProvider.gridController,
                   mainView: Column(
                     children: [
-                      Expanded(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            ///gradient container
-                            /// this container will contain all widgets(image/texts/draws/sticker)
-                            /// wrap this widget with coloredFilter
-                            GestureDetector(
-                              onScaleStart: _onScaleStart,
-                              onScaleUpdate: _onScaleUpdate,
-                              onTap: () {
-                                controlNotifier.isTextEditing =
-                                    !controlNotifier.isTextEditing;
-                              },
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(25),
-                                  child: SizedBox(
-                                    width: screenUtil.screenWidth,
-                                    child: RepaintBoundary(
-                                      /////RepaintBoundary
-                                      key: contentKey,
-                                      //  controller: controller,
-                                      //   child:
-                                      //       key: contentKey,
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        decoration: BoxDecoration(
-                                            gradient: controlNotifier
-                                                    .mediaPath.isEmpty
-                                                ? LinearGradient(
-                                                    colors: controlNotifier
-                                                            .gradientColors![
-                                                        controlNotifier
-                                                            .gradientIndex],
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
-                                                  )
-                                                : LinearGradient(
-                                                    colors: [
-                                                      colorProvider.color1,
-                                                      colorProvider.color2
-                                                    ],
-                                                    begin: Alignment.topCenter,
-                                                    end: Alignment.bottomCenter,
-                                                  )),
-                                        child: GestureDetector(
-                                          onScaleStart: _onScaleStart,
-                                          onScaleUpdate: _onScaleUpdate,
-                                          child: Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              /// in this case photo view works as a main background container to manage
-                                              /// the gestures of all movable items.
-                                              PhotoView.customChild(
-                                                child: Container(),
-                                                backgroundDecoration:
-                                                    const BoxDecoration(
-                                                        color:
-                                                            Colors.transparent),
+                      ScreenRecorder(
+                          controller: controller,
+                          width: screenUtil.screenWidth,
+                          height: screenUtil.scaleHeight,
+                          child: Expanded(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                ///gradient container
+                                /// this container will contain all widgets(image/texts/draws/sticker)
+                                /// wrap this widget with coloredFilter
+                                GestureDetector(
+                                  onScaleStart: _onScaleStart,
+                                  onScaleUpdate: _onScaleUpdate,
+                                  onTap: () {
+                                    controlNotifier.isTextEditing =
+                                        !controlNotifier.isTextEditing;
+                                  },
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: SizedBox(
+                                        width: screenUtil.screenWidth,
+                                        child: RepaintBoundary(
+                                          key: contentKey,
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            decoration: BoxDecoration(
+                                                gradient: controlNotifier
+                                                        .mediaPath.isEmpty
+                                                    ? LinearGradient(
+                                                        colors: controlNotifier
+                                                                .gradientColors![
+                                                            controlNotifier
+                                                                .gradientIndex],
+                                                        begin:
+                                                            Alignment.topLeft,
+                                                        end: Alignment
+                                                            .bottomRight,
+                                                      )
+                                                    : LinearGradient(
+                                                        colors: [
+                                                          colorProvider.color1,
+                                                          colorProvider.color2
+                                                        ],
+                                                        begin:
+                                                            Alignment.topCenter,
+                                                        end: Alignment
+                                                            .bottomCenter,
+                                                      )),
+                                            child: GestureDetector(
+                                              onScaleStart: _onScaleStart,
+                                              onScaleUpdate: _onScaleUpdate,
+                                              child: Stack(
+                                                alignment: Alignment.center,
+                                                children: [
+                                                  /// in this case photo view works as a main background container to manage
+                                                  /// the gestures of all movable items.
+                                                  PhotoView.customChild(
+                                                    child: Container(),
+                                                    backgroundDecoration:
+                                                        const BoxDecoration(
+                                                            color: Colors
+                                                                .transparent),
+                                                  ),
+
+                                                  ///list items
+                                                  ...itemProvider
+                                                      .draggableWidget
+                                                      .map((editableItem) {
+                                                    return DraggableWidget(
+                                                      context: context,
+                                                      draggableWidget:
+                                                          editableItem,
+                                                      onPointerDown: (details) {
+                                                        _updateItemPosition(
+                                                          editableItem,
+                                                          details,
+                                                        );
+                                                      },
+                                                      onPointerUp: (details) {
+                                                        _deleteItemOnCoordinates(
+                                                          editableItem,
+                                                          details,
+                                                        );
+                                                      },
+                                                      onPointerMove: (details) {
+                                                        _deletePosition(
+                                                          editableItem,
+                                                          details,
+                                                        );
+                                                      },
+                                                    );
+                                                  }),
+
+                                                  /// finger paint
+                                                ],
                                               ),
-
-                                              ///list items
-                                              ...itemProvider.draggableWidget
-                                                  .map((editableItem) {
-                                                return DraggableWidget(
-                                                  context: context,
-                                                  draggableWidget: editableItem,
-                                                  onPointerDown: (details) {
-                                                    _updateItemPosition(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                  onPointerUp: (details) {
-                                                    _deleteItemOnCoordinates(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                  onPointerMove: (details) {
-                                                    _deletePosition(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                );
-                                              }),
-
-                                              /// finger paint
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
 
-                            /// middle text
-                            if (itemProvider.draggableWidget.isEmpty &&
-                                !controlNotifier.isTextEditing &&
-                                paintingProvider.lines.isEmpty)
-                              IgnorePointer(
-                                ignoring: true,
-                                child: Align(
-                                  alignment: const Alignment(0, -0.1),
-                                  child: Text('Tap to type',
-                                      style: TextStyle(
-                                          fontFamily: 'Alegreya',
-                                          package: 'stories_editor',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 30,
-                                          color: Colors.white.withOpacity(0.5),
-                                          shadows: <Shadow>[
-                                            Shadow(
-                                                offset: const Offset(1.0, 1.0),
-                                                blurRadius: 3.0,
-                                                color: Colors.black45
-                                                    .withOpacity(0.3))
-                                          ])),
+                                /// middle text
+                                if (itemProvider.draggableWidget.isEmpty &&
+                                    !controlNotifier.isTextEditing &&
+                                    paintingProvider.lines.isEmpty)
+                                  IgnorePointer(
+                                    ignoring: true,
+                                    child: Align(
+                                      alignment: const Alignment(0, -0.1),
+                                      child: Text('Tap to type',
+                                          style: TextStyle(
+                                              fontFamily: 'Alegreya',
+                                              package: 'stories_editor',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 30,
+                                              color:
+                                                  Colors.white.withOpacity(0.5),
+                                              shadows: <Shadow>[
+                                                Shadow(
+                                                    offset:
+                                                        const Offset(1.0, 1.0),
+                                                    blurRadius: 3.0,
+                                                    color: Colors.black45
+                                                        .withOpacity(0.3))
+                                              ])),
+                                    ),
+                                  ),
+
+                                /// top tools
+                                Visibility(
+                                  visible: !controlNotifier.isTextEditing &&
+                                      !controlNotifier.isPainting,
+                                  child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: TopTools(
+                                        contentKey: contentKey,
+                                        context: context,
+                                        giphyLanguage: widget.giphyLanguage,
+                                        giphyRating: widget.giphyRating,
+                                        showSaveDraftOption:
+                                            widget.showSaveDraftOption,
+                                        saveDraftCallback:
+                                            widget.saveDraftCallback,
+                                        recordCallback: (duration,
+                                            doneCallbackBool,
+                                            saveToGallery) async {
+                                          setState(() {
+                                            hide4Record = true;
+                                          });
+                                          await recordWidget(duration,
+                                              doneCallbackBool, saveToGallery);
+                                          setState(() {
+                                            hide4Record = false;
+                                          });
+                                        },
+                                      )),
                                 ),
-                              ),
 
-                            /// top tools
-                            Visibility(
-                              visible: !controlNotifier.isTextEditing &&
-                                  !controlNotifier.isPainting,
-                              child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: TopTools(
-                                    contentKey: contentKey,
+                                /// delete item when the item is in position
+                                DeleteItem(
+                                  activeItem: _activeItem,
+                                  animationsDuration:
+                                      const Duration(milliseconds: 300),
+                                  isDeletePosition: _isDeletePosition,
+                                ),
+
+                                /// show text editor
+                                Visibility(
+                                  visible: controlNotifier.isTextEditing,
+                                  child: TextEditor(
                                     context: context,
-                                    giphyLanguage: widget.giphyLanguage,
-                                    giphyRating: widget.giphyRating,
-                                    showSaveDraftOption:
-                                        widget.showSaveDraftOption,
-                                    saveDraftCallback: widget.saveDraftCallback,
-                                    recordCallback: (duration, doneCallbackBool,
-                                        saveToGallery) async {
-                                      setState(() {
-                                        hide4Record = true;
-                                      });
-                                      await recordWidget(duration,
-                                          doneCallbackBool, saveToGallery);
-                                      setState(() {
-                                        hide4Record = false;
-                                      });
-                                    },
-                                  )),
-                            ),
+                                  ),
+                                ),
 
-                            /// delete item when the item is in position
-                            DeleteItem(
-                              activeItem: _activeItem,
-                              animationsDuration:
-                                  const Duration(milliseconds: 300),
-                              isDeletePosition: _isDeletePosition,
+                                /// show painting sketch
+                                Visibility(
+                                  visible: controlNotifier.isPainting,
+                                  child: const Painting(),
+                                ),
+                              ],
                             ),
-
-                            /// show text editor
-                            Visibility(
-                              visible: controlNotifier.isTextEditing,
-                              child: TextEditor(
-                                context: context,
-                              ),
-                            ),
-
-                            /// show painting sketch
-                            Visibility(
-                              visible: controlNotifier.isPainting,
-                              child: const Painting(),
-                            ),
-                          ],
-                        ),
-                      ),
+                          )),
 
                       /// bottom tools
                       if (!kIsWeb || controlNotifier.isPainting)
