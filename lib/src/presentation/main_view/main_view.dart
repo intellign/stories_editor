@@ -191,8 +191,7 @@ class _MainViewState extends State<MainView> {
     await startTimer(duration, doneCallbackBool, saveToGallery);
   }
 
-   startTimer(
-      int? duration, bool doneCallbackBool, bool saveToGallery) async {
+  startTimer(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     Duration oneSec = Duration(seconds: duration ?? 5);
     String path = "";
 
@@ -205,14 +204,14 @@ class _MainViewState extends State<MainView> {
 
             timer.cancel();
           });
+
           var result = await controller.export(renderType: RenderType.video);
           if (result['success'] == true) {
-            setState(() {
-              path = result['outPath'];
-            });
+            path = result['outPath'];
+
             if (saveToGallery) {
               await ImageGallerySaver.saveFile(path,
-                      name: "stories_creator${DateTime.now()}")
+                      name: "stories_creator${DateTime.now()}.mp4")
                   .then((value) {
                 if (value['isSuccess'] == true) {
                   debugPrint(value['filePath']);
@@ -235,6 +234,12 @@ class _MainViewState extends State<MainView> {
                 setState(() {
                   _showDialog = false;
                 });
+              }).catchError((e) {
+                setState(() {
+                  _showDialog = false;
+                });
+                Fluttertoast.showToast(
+                    msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
               });
             } else {
               if (!doneCallbackBool) {
@@ -246,6 +251,9 @@ class _MainViewState extends State<MainView> {
               if (widget.onDone != null && doneCallbackBool) {
                 widget.onDone!(path);
               }
+              setState(() {
+                _showDialog = false;
+              });
             }
           } else {
             setState(() {
@@ -336,6 +344,7 @@ class _MainViewState extends State<MainView> {
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
                             ScreenRecorder(
+                                key: contentKey,
                                 controller: controller,
                                 child: GestureDetector(
                                   onScaleStart: _onScaleStart,
@@ -424,44 +433,6 @@ class _MainViewState extends State<MainView> {
                                                   }),
 
                                                   /// finger paint
-                                                  IgnorePointer(
-                                                    ignoring: true,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.topCenter,
-                                                      child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(25),
-                                                        ),
-                                                        child: RepaintBoundary(
-                                                          child: SizedBox(
-                                                            width: screenUtil
-                                                                .screenWidth,
-                                                            child: StreamBuilder<
-                                                                List<
-                                                                    PaintingModel>>(
-                                                              stream: paintingProvider
-                                                                  .linesStreamController
-                                                                  .stream,
-                                                              builder: (context,
-                                                                  snapshot) {
-                                                                return CustomPaint(
-                                                                  painter:
-                                                                      Sketcher(
-                                                                    lines: paintingProvider
-                                                                        .lines,
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
                                                 ],
                                               ),
                                             ),
