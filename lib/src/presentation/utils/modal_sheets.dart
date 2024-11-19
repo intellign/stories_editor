@@ -142,6 +142,8 @@ Future<bool> exitDialog({
                               if (recordCallback != null &&
                                   (_widgetProvider.draggableWidget.indexWhere(
                                           (element) =>
+                                         element.animationType !=
+                                                  TextAnimationType.none ||
                                               element.type == ItemType.gif ||
                                               element.type == ItemType.video ||
                                               element.type == ItemType.audio) >
