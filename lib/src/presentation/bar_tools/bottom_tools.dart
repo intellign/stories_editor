@@ -150,6 +150,8 @@ class BottomTools extends StatelessWidget {
                                   if (recordCallback != null &&
                                       (itemNotifier.draggableWidget.indexWhere(
                                               (element) =>
+                                           element.animationType !=
+                                                  TextAnimationType.none ||
                                                   element.type ==
                                                       ItemType.gif ||
                                                   element.type ==
