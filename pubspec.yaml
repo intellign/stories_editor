@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  screenrecorder:
+  screen_recorder:
     git:
       url: https://github.com/intellign/screenrecorder
       
