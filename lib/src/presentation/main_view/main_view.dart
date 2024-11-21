@@ -31,7 +31,8 @@ import 'package:stories_editor/src/presentation/utils/modal_sheets.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
-//import 'package:render/render.dart';
+
+import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:screen_recorder/screen_recorder.dart';
@@ -176,13 +177,92 @@ class _MainViewState extends State<MainView> {
   bool _recording = false;
   bool _exporting = false;
 
-  ScreenRecorderController controller = ScreenRecorderController();
+  final controller = RenderController();
 
   // ScreenRecorderController controller = ScreenRecorderController(); //pixelRatio: 1.0, skipFramesBetweenCaptures: 1
   // bool get canExport => controller.exporter.hasFrames;
 
   int _timerStart = 5;
 
+  recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
+     setState(() {
+                _showDialog = true;
+              });
+    
+    final recorder = renderController.recordMotion(
+       functionController.duration,
+       settings: const MotionSettings(pixelRatio: 5),
+       format: const GifFormat(),
+);
+
+await Future.delayed(Duration(seconds: 5));
+
+final result = await recorder.stop(); // result can then be displayed (see Motion rendering)
+
+    final result = await controller.captureMotion(Duration(seconds: 4));
+
+/*final result = await renderController.captureMotionWithStream(
+     functionController.duration,
+     settings: const MotionSettings(pixelRatio: 4),
+     format: Format.gif,
+);
+    */
+
+//final controller = VideoPlayerController.file(result.output);
+//await controller.initialize();
+//await controller.play();
+
+//VideoPlayer(snapshot.data!); // show result as video
+
+      if (saveToGallery) {
+              await ImageGallerySaver.saveFile(path,
+                      name: "stories_creator${DateTime.now()}.mp4")
+                  .then((value) {
+                if (value['isSuccess'] == true) {
+                  debugPrint(value['filePath']);
+
+                  if (!doneCallbackBool) {
+                    Fluttertoast.showToast(
+                        msg: '👍',
+                        gravity: ToastGravity.CENTER); //'Successfully saved'
+                  }
+
+                  if (widget.onDone != null && doneCallbackBool) {
+                    widget.onDone!(path);
+                  }
+                } else {
+                  debugPrint(value['errorMessage']);
+                  Fluttertoast.showToast(
+                      msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+                }
+              }).whenComplete(() {
+                setState(() {
+                  _showDialog = false;
+                });
+              }).catchError((e) {
+                setState(() {
+                  _showDialog = false;
+                });
+                Fluttertoast.showToast(
+                    msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+              });
+            } else {
+              if (!doneCallbackBool) {
+                Fluttertoast.showToast(
+                    msg: '👍',
+                    gravity: ToastGravity.CENTER); //'Successfully saved'
+              }
+
+              if (widget.onDone != null && doneCallbackBool) {
+                widget.onDone!(path);
+              }
+              setState(() {
+                _showDialog = false;
+              });
+            }
+    
+  }
+/*
   recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     controller.start();
     setState(() {
@@ -271,7 +351,7 @@ class _MainViewState extends State<MainView> {
       },
     );
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     final ScreenUtil screenUtil = ScreenUtil();
@@ -336,11 +416,7 @@ class _MainViewState extends State<MainView> {
                   gridController: scrollProvider.gridController,
                   mainView: Column(
                     children: [
-                      ScreenRecorder(
-                          controller: controller,
-                          width: screenUtil.screenWidth,
-                          height: screenUtil.scaleHeight,
-                          child: Expanded(
+                       Expanded(
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
@@ -360,8 +436,10 @@ class _MainViewState extends State<MainView> {
                                       borderRadius: BorderRadius.circular(25),
                                       child: SizedBox(
                                         width: screenUtil.screenWidth,
-                                        child: RepaintBoundary(
-                                          key: contentKey,
+                                        child: Render(
+    controller: controller,
+
+                                         // key: contentKey,
                                           child: AnimatedContainer(
                                             duration: const Duration(
                                                 milliseconds: 200),
@@ -524,7 +602,7 @@ class _MainViewState extends State<MainView> {
                                 ),
                               ],
                             ),
-                          )),
+                          ),
 
                       /// bottom tools
                       if (!kIsWeb || controlNotifier.isPainting)
