@@ -199,10 +199,10 @@ class _MainViewState extends State<MainView> {
     final result = await recorder
         .stop(); // result can then be displayed (see Motion rendering)
 
-    final result =
+    final result0 =
         await controller.captureMotion(Duration(seconds: duration ?? 5));
 
-    final result = await controller.captureMotionWithStream(
+    final result00 = await controller.captureMotionWithStream(
       Duration(seconds: duration ?? 5),
       settings: const MotionSettings(pixelRatio: 4),
       format: Mp4Format(
