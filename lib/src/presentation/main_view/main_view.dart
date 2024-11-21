@@ -184,44 +184,65 @@ class _MainViewState extends State<MainView> {
 
   int _timerStart = 5;
 
+  // late Stream<RenderNotifier> stream;
+  //Widget? wid;
+
   recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
     setState(() {
       _showDialog = true;
     });
-
-    final recorder = controller.recordMotion(
-      settings: const MotionSettings(pixelRatio: 5),
-      format: const Mp4Format(),
+    final stream = controller.captureMotionWithStream(
+      Duration(seconds: 5),
+      settings: const MotionSettings(
+          //    pixelRatio: 3,
+          //  frameRate: 30,
+          //simultaneousCaptureHandlers: 6,
+          ),
+      logInConsole: true,
+      format: Mp4Format(),
     );
+    //   setState(() {
+    //    functionController.attach(stream);
+    // });
+    final result = await stream
+        .firstWhere((event) => event.isResult || event.isFatalError);
+    if (result.isFatalError) {
+      setState(() {
+        _showDialog = false;
+      });
+      return;
+    }
+    saveResult0(result as RenderResult, doneCallbackBool, saveToGallery);
 
-    await Future.delayed(Duration(seconds: 5));
-
-    final result = await recorder
-        .stop(); // result can then be displayed (see Motion rendering)
-
-    final result0 =
-        await controller.captureMotion(Duration(seconds: duration ?? 5));
-
-    final result00 = await controller.captureMotionWithStream(
+    /*   final result0 = await controller.captureMotion(
       Duration(seconds: duration ?? 5),
       settings: const MotionSettings(pixelRatio: 4),
       format: Mp4Format(
-          /*audio: [
-        RenderAudio.url(url),
+    /*
+          audio: [
+        RenderAudio.url( Uri.parse(
+                                "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"),
+                            startTime: 40,
+                            endTime: 45.4365,),
         RenderAudio.file(file),
     ]
     */
           ),
     );
+    */
 
 //final controller = VideoPlayerController.file(result.output);
 //await controller.initialize();
 //await controller.play();
 
 //VideoPlayer(snapshot.data!); // show result as video
+  }
 
+  saveResult0(
+      RenderResult result, bool doneCallbackBool, bool saveToGallery) async {
+    String path = result.output.path;
     if (saveToGallery) {
-      await ImageGallerySaver.saveFile(result.output.path,
+      await ImageGallerySaver.saveFile(path,
               name: "stories_creator${DateTime.now()}.mp4")
           .then((value) {
         if (value['isSuccess'] == true) {
@@ -233,7 +254,7 @@ class _MainViewState extends State<MainView> {
           }
 
           if (widget.onDone != null && doneCallbackBool) {
-            widget.onDone!(result.output.path);
+            widget.onDone!(path);
           }
         } else {
           debugPrint(value['errorMessage']);
@@ -258,7 +279,7 @@ class _MainViewState extends State<MainView> {
       }
 
       if (widget.onDone != null && doneCallbackBool) {
-        widget.onDone!(result.output.path);
+        widget.onDone!(path);
       }
       setState(() {
         _showDialog = false;
@@ -359,6 +380,7 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     final ScreenUtil screenUtil = ScreenUtil();
+
     return WillPopScope(
       onWillPop: _popScope,
       child: Material(
@@ -408,6 +430,90 @@ class _MainViewState extends State<MainView> {
               );
             }
 
+            Widget wid = GestureDetector(
+              onScaleStart: _onScaleStart,
+              onScaleUpdate: _onScaleUpdate,
+              onTap: () {
+                controlNotifier.isTextEditing = !controlNotifier.isTextEditing;
+              },
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: SizedBox(
+                      width: screenUtil.screenWidth,
+                      child: RepaintBoundary(
+                          // controller: controller,
+
+                          key: contentKey,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                                gradient: controlNotifier.mediaPath.isEmpty
+                                    ? LinearGradient(
+                                        colors: controlNotifier.gradientColors![
+                                            controlNotifier.gradientIndex],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : LinearGradient(
+                                        colors: [
+                                          colorProvider.color1,
+                                          colorProvider.color2
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      )),
+                            child: GestureDetector(
+                              onScaleStart: _onScaleStart,
+                              onScaleUpdate: _onScaleUpdate,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  /// in this case photo view works as a main background container to manage
+                                  /// the gestures of all movable items.
+                                  PhotoView.customChild(
+                                    child: Container(),
+                                    backgroundDecoration: const BoxDecoration(
+                                        color: Colors.transparent),
+                                  ),
+
+                                  ///list items
+                                  ...itemProvider.draggableWidget
+                                      .map((editableItem) {
+                                    return DraggableWidget(
+                                      context: context,
+                                      draggableWidget: editableItem,
+                                      onPointerDown: (details) {
+                                        _updateItemPosition(
+                                          editableItem,
+                                          details,
+                                        );
+                                      },
+                                      onPointerUp: (details) {
+                                        _deleteItemOnCoordinates(
+                                          editableItem,
+                                          details,
+                                        );
+                                      },
+                                      onPointerMove: (details) {
+                                        _deletePosition(
+                                          editableItem,
+                                          details,
+                                        );
+                                      },
+                                    );
+                                  }),
+
+                                  /// finger paint
+                                ],
+                              ),
+                            ),
+                          ))),
+                ),
+              ),
+            );
+
             return Stack(children: [
               SafeArea(
                 //top: false,
@@ -427,97 +533,9 @@ class _MainViewState extends State<MainView> {
                             ///gradient container
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
-                            GestureDetector(
-                              onScaleStart: _onScaleStart,
-                              onScaleUpdate: _onScaleUpdate,
-                              onTap: () {
-                                controlNotifier.isTextEditing =
-                                    !controlNotifier.isTextEditing;
-                              },
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(25),
-                                  child: SizedBox(
-                                    width: screenUtil.screenWidth,
-                                    child: Render(
-                                      controller: controller,
-
-                                      // key: contentKey,
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        decoration: BoxDecoration(
-                                            gradient: controlNotifier
-                                                    .mediaPath.isEmpty
-                                                ? LinearGradient(
-                                                    colors: controlNotifier
-                                                            .gradientColors![
-                                                        controlNotifier
-                                                            .gradientIndex],
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
-                                                  )
-                                                : LinearGradient(
-                                                    colors: [
-                                                      colorProvider.color1,
-                                                      colorProvider.color2
-                                                    ],
-                                                    begin: Alignment.topCenter,
-                                                    end: Alignment.bottomCenter,
-                                                  )),
-                                        child: GestureDetector(
-                                          onScaleStart: _onScaleStart,
-                                          onScaleUpdate: _onScaleUpdate,
-                                          child: Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              /// in this case photo view works as a main background container to manage
-                                              /// the gestures of all movable items.
-                                              PhotoView.customChild(
-                                                child: Container(),
-                                                backgroundDecoration:
-                                                    const BoxDecoration(
-                                                        color:
-                                                            Colors.transparent),
-                                              ),
-
-                                              ///list items
-                                              ...itemProvider.draggableWidget
-                                                  .map((editableItem) {
-                                                return DraggableWidget(
-                                                  context: context,
-                                                  draggableWidget: editableItem,
-                                                  onPointerDown: (details) {
-                                                    _updateItemPosition(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                  onPointerUp: (details) {
-                                                    _deleteItemOnCoordinates(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                  onPointerMove: (details) {
-                                                    _deletePosition(
-                                                      editableItem,
-                                                      details,
-                                                    );
-                                                  },
-                                                );
-                                              }),
-
-                                              /// finger paint
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            Render(
+                              controller: controller,
+                              child: wid!,
                             ),
 
                             /// middle text
@@ -669,20 +687,19 @@ class _MainViewState extends State<MainView> {
                         ),
                 ),
               ),
-              _showDialog
-                  ? Container(
-                      color: Colors.black.withOpacity(0.6),
-                      child: const Center(
-                        child: SizedBox(
-                          height: 30,
-                          width: 30,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.7,
-                            color: Colors.blue,
-                          ),
+              if (_showDialog)
+                Container(
+                    color: Colors.black.withOpacity(0.6),
+                    child: const Center(
+                      child: SizedBox(
+                        height: 30,
+                        width: 30,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.7,
+                          color: Colors.blue,
                         ),
-                      ))
-                  : SizedBox(),
+                      ),
+                    )),
             ]);
           },
         ),
