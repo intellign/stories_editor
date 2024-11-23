@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gallery_media_picker/gallery_media_picker.dart';
+import 'package:gallery_media_picker/src/core/functions.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,6 +32,8 @@ import 'package:stories_editor/src/presentation/utils/modal_sheets.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
+import 'package:stories_editor/src/presentation/widgets/circularButtonDesign.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
@@ -61,6 +64,9 @@ class MainView extends StatefulWidget {
   /// on done
   final Function(String)? onDone;
 
+  /// on camera
+  final Function? onCamera;
+
   /// on done button Text
   final Widget? onDoneButtonStyle;
 
@@ -87,6 +93,7 @@ class MainView extends StatefulWidget {
     required this.appname,
     required this.giphyKey,
     required this.onDone,
+    this.onCamera,
     required this.permissionWidget,
     this.giphyRating,
     this.giphyLanguage,
@@ -125,11 +132,12 @@ class _MainViewState extends State<MainView> {
   bool _isDeletePosition = false;
   bool _inAction = false;
 
-//  final controller = RenderController();
+  bool canAddMoreImages = true;
+  bool canUseVideo = true;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       var _control = Provider.of<ControlNotifier>(context, listen: false);
 
       /// initialize control variable provider
@@ -148,11 +156,16 @@ class _MainViewState extends State<MainView> {
       if (widget.colorList != null) {
         _control.colorList = widget.colorList;
       }
+
+      final GalleryMediaPickerController provider =
+          GalleryMediaPickerController();
+
+      if (widget.permissionWidget == null) {
+        await GalleryFunctions.getPermission(setState, provider);
+      }
+
       if (widget.starterFile != null) {
         Future.delayed(Duration(seconds: 5), () {
-          final GalleryMediaPickerController provider =
-              GalleryMediaPickerController();
-
           _control.mediaPath = widget.starterFile!.path;
           /*      _control.mediaPath = provider.pathList.isNotEmpty
               ? provider.pathList[0].name
@@ -161,7 +174,7 @@ class _MainViewState extends State<MainView> {
                   */
           setState(() {});
         });
-      } else {}
+      }
     });
     super.initState();
   }
@@ -191,15 +204,26 @@ class _MainViewState extends State<MainView> {
     setState(() {
       _showDialog = true;
     });
+
     final stream = controller.captureMotionWithStream(
       Duration(seconds: 5),
       settings: const MotionSettings(
-          //    pixelRatio: 3,
-          //  frameRate: 30,
-          //simultaneousCaptureHandlers: 6,
+          //  pixelRatio: 5,
+          //frameRate: 20, //30
+          // simultaneousCaptureHandlers: 6,
           ),
       logInConsole: true,
-      format: Mp4Format(),
+      format: Mp4Format(
+          /*     // scale: RenderScale.fullHD,
+          audio: [
+            RenderAudio.url(
+                 Uri.parse( "https://firebasestorage.googleapis.com/v0/b/facecard-759f9.appspot.com/o/%2B00_AUDIO_MEDIA%2FU934eF7Xw2ZJ9exQfWlnJauty7I3%2F1695893200311%2F1695893200311?alt=media&token=85bc77f0-10c6-4c9c-b33a-dc30322f7b9a.mp3"),
+              startTime: 30,
+              endTime: 35.4365,
+            ),
+          ]
+          */
+          ),
     );
     //   setState(() {
     //    functionController.attach(stream);
@@ -224,7 +248,7 @@ class _MainViewState extends State<MainView> {
                                 "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"),
                             startTime: 40,
                             endTime: 45.4365,),
-        RenderAudio.file(file),
+     //   RenderAudio.file(file),
     ]
     */
           ),
@@ -377,10 +401,99 @@ class _MainViewState extends State<MainView> {
     );
   }
 */
+
+  bool whiteTheme = false;
+
+  Widget addMediaTopWidget(
+      ScrollNotifier scrollProvider, DraggableWidgetNotifier itemProvider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        CircularButtonDesign(
+            onTap: () async {
+              Navigator.of(context).pop();
+              await Future.delayed(Duration(milliseconds: 700));
+              if (widget.onCamera != null) {
+                final file = await widget.onCamera!(context);
+                if (file != null) {
+                  print("9999999-${file.path}");
+                  String path = file.path;
+                  itemProvider.draggableWidget.add(EditableItem()
+                    ..type = path.endsWith(".mp4") || path.endsWith(".mov")
+                        ? ItemType.video
+                        : ItemType.image
+                    ..scale = 0.5
+                    //   ..rotation = 0.5
+                    ..url = path
+                    //   ..duration =...TODO?...
+                    ..position = Offset(0.0, 0.0));
+                } else {
+                  print("uuuuuuuuu");
+                }
+              }
+            },
+            whiteTheme: !whiteTheme,
+            icon: Icons.camera_alt_rounded),
+        CircularButtonDesign(
+          whiteTheme: !whiteTheme,
+          icon: Icons.photo_rounded,
+          onTap: () async {
+            /// scroll to gridView page
+            Navigator.of(context).pop();
+            await Future.delayed(Duration(milliseconds: 700));
+            scrollProvider.pageController.animateToPage(1,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.ease);
+          },
+        ),
+        CircularButtonDesign(
+            onTap: () {
+              Fluttertoast.showToast(
+                  msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
+            },
+            whiteTheme: !whiteTheme,
+            icon: Icons.music_note_rounded),
+      ],
+    );
+  }
+
+  Widget leadingWidget(ScrollNotifier scrollProvider) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15, right: 15),
+      child: Align(
+        alignment: Alignment.bottomRight,
+        child: AnimatedOnTapButton(
+          onTap: () {
+            scrollProvider.pageController.animateToPage(0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeIn);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1.2,
+                )),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ScreenUtil screenUtil = ScreenUtil();
-
     return WillPopScope(
       onWillPop: _popScope,
       child: Material(
@@ -396,124 +509,6 @@ class _MainViewState extends State<MainView> {
             TextEditingNotifier>(
           builder: (context, controlNotifier, itemProvider, scrollProvider,
               colorProvider, paintingProvider, editingProvider, child) {
-            Widget leadingWidget() {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 15, right: 15),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: AnimatedOnTapButton(
-                    onTap: () {
-                      scrollProvider.pageController.animateToPage(0,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeIn);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 1.2,
-                          )),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            Widget wid = GestureDetector(
-              onScaleStart: _onScaleStart,
-              onScaleUpdate: _onScaleUpdate,
-              onTap: () {
-                controlNotifier.isTextEditing = !controlNotifier.isTextEditing;
-              },
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: SizedBox(
-                      width: screenUtil.screenWidth,
-                      child: RepaintBoundary(
-                          // controller: controller,
-
-                          key: contentKey,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                                gradient: controlNotifier.mediaPath.isEmpty
-                                    ? LinearGradient(
-                                        colors: controlNotifier.gradientColors![
-                                            controlNotifier.gradientIndex],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      )
-                                    : LinearGradient(
-                                        colors: [
-                                          colorProvider.color1,
-                                          colorProvider.color2
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      )),
-                            child: GestureDetector(
-                              onScaleStart: _onScaleStart,
-                              onScaleUpdate: _onScaleUpdate,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  /// in this case photo view works as a main background container to manage
-                                  /// the gestures of all movable items.
-                                  PhotoView.customChild(
-                                    child: Container(),
-                                    backgroundDecoration: const BoxDecoration(
-                                        color: Colors.transparent),
-                                  ),
-
-                                  ///list items
-                                  ...itemProvider.draggableWidget
-                                      .map((editableItem) {
-                                    return DraggableWidget(
-                                      context: context,
-                                      draggableWidget: editableItem,
-                                      onPointerDown: (details) {
-                                        _updateItemPosition(
-                                          editableItem,
-                                          details,
-                                        );
-                                      },
-                                      onPointerUp: (details) {
-                                        _deleteItemOnCoordinates(
-                                          editableItem,
-                                          details,
-                                        );
-                                      },
-                                      onPointerMove: (details) {
-                                        _deletePosition(
-                                          editableItem,
-                                          details,
-                                        );
-                                      },
-                                    );
-                                  }),
-
-                                  /// finger paint
-                                ],
-                              ),
-                            ),
-                          ))),
-                ),
-              ),
-            );
-
             return Stack(children: [
               SafeArea(
                 //top: false,
@@ -534,9 +529,143 @@ class _MainViewState extends State<MainView> {
                             /// this container will contain all widgets(image/texts/draws/sticker)
                             /// wrap this widget with coloredFilter
                             Render(
-                              controller: controller,
-                              child: wid!,
-                            ),
+                                controller: controller,
+                                child: GestureDetector(
+                                  onScaleStart: _onScaleStart,
+                                  onScaleUpdate: _onScaleUpdate,
+                                  onTap: () {
+                                    controlNotifier.isTextEditing =
+                                        !controlNotifier.isTextEditing;
+                                  },
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: SizedBox(
+                                        width: screenUtil.screenWidth,
+                                        child: RepaintBoundary(
+                                          key: contentKey,
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            decoration: BoxDecoration(
+                                                gradient: controlNotifier
+                                                        .mediaPath.isEmpty
+                                                    ? LinearGradient(
+                                                        colors: controlNotifier
+                                                                .gradientColors![
+                                                            controlNotifier
+                                                                .gradientIndex],
+                                                        begin:
+                                                            Alignment.topLeft,
+                                                        end: Alignment
+                                                            .bottomRight,
+                                                      )
+                                                    : LinearGradient(
+                                                        colors: [
+                                                          colorProvider.color1,
+                                                          colorProvider.color2
+                                                        ],
+                                                        begin:
+                                                            Alignment.topCenter,
+                                                        end: Alignment
+                                                            .bottomCenter,
+                                                      )),
+                                            child: GestureDetector(
+                                              onScaleStart: _onScaleStart,
+                                              onScaleUpdate: _onScaleUpdate,
+                                              child: Stack(
+                                                alignment: Alignment.center,
+                                                children: [
+                                                  /// in this case photo view works as a main background container to manage
+                                                  /// the gestures of all movable items.
+                                                  PhotoView.customChild(
+                                                    child: Container(),
+                                                    backgroundDecoration:
+                                                        const BoxDecoration(
+                                                            color: Colors
+                                                                .transparent),
+                                                  ),
+
+                                                  ///list items
+                                                  ...itemProvider
+                                                      .draggableWidget
+                                                      .map((editableItem) {
+                                                    return DraggableWidget(
+                                                      context: context,
+                                                      draggableWidget:
+                                                          editableItem,
+                                                      onPointerDown: (details) {
+                                                        _updateItemPosition(
+                                                          editableItem,
+                                                          details,
+                                                        );
+                                                      },
+                                                      onPointerUp: (details) {
+                                                        _deleteItemOnCoordinates(
+                                                          editableItem,
+                                                          details,
+                                                          controlNotifier,
+                                                        );
+                                                      },
+                                                      onPointerMove: (details) {
+                                                        _deletePosition(
+                                                          editableItem,
+                                                          details,
+                                                          controlNotifier,
+                                                        );
+                                                      },
+                                                    );
+                                                  }),
+
+                                                  /// finger paint
+                                                  IgnorePointer(
+                                                    ignoring: true,
+                                                    child: Align(
+                                                      alignment:
+                                                          Alignment.topCenter,
+                                                      child: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(25),
+                                                        ),
+                                                        child: RepaintBoundary(
+                                                          child: SizedBox(
+                                                            width: screenUtil
+                                                                .screenWidth,
+                                                            child: StreamBuilder<
+                                                                List<
+                                                                    PaintingModel>>(
+                                                              stream: paintingProvider
+                                                                  .linesStreamController
+                                                                  .stream,
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                return CustomPaint(
+                                                                  painter:
+                                                                      Sketcher(
+                                                                    lines: paintingProvider
+                                                                        .lines,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )),
 
                             /// middle text
                             if (itemProvider.draggableWidget.isEmpty &&
@@ -588,6 +717,8 @@ class _MainViewState extends State<MainView> {
                                         hide4Record = false;
                                       });
                                     },
+                                    addMediaTopWidget: addMediaTopWidget(
+                                        scrollProvider, itemProvider),
                                   )),
                             ),
 
@@ -597,6 +728,8 @@ class _MainViewState extends State<MainView> {
                               animationsDuration:
                                   const Duration(milliseconds: 300),
                               isDeletePosition: _isDeletePosition,
+                              controlNotifier: controlNotifier,
+                              itemProvider: itemProvider,
                             ),
 
                             /// show text editor
@@ -621,6 +754,15 @@ class _MainViewState extends State<MainView> {
                         BottomTools(
                           permissionWidget: widget.permissionWidget,
                           contentKey: contentKey,
+                          showAddMoreMediaF: () {
+                            showAddMoreMedia(
+                              context,
+                              scrollProvider,
+                              addMediaTopWidget: addMediaTopWidget(
+                                  scrollProvider, itemProvider),
+                              whiteTheme: whiteTheme,
+                            );
+                          },
                           onDone: (bytes) {
                             setState(() {
                               widget.onDone!(bytes);
@@ -647,7 +789,7 @@ class _MainViewState extends State<MainView> {
                           Container(
                               margin: EdgeInsets.only(top: 11),
                               //  height: 100,
-                              child: leadingWidget()),
+                              child: leadingWidget(scrollProvider)),
                           Container(
                               margin: EdgeInsets.only(top: 11),
                               height: MediaQuery.of(context).size.height / 1.25,
@@ -659,12 +801,44 @@ class _MainViewState extends State<MainView> {
                           pathList: (List<PickedAssetModel> paths) {
                             controlNotifier.mediaPath =
                                 paths.first.path.toString();
-                            if (controlNotifier.mediaPath.isNotEmpty) {
+                            if (itemProvider.draggableWidget.isEmpty ||
+                                (itemProvider.draggableWidget.first.type !=
+                                        ItemType.image &&
+                                    itemProvider.draggableWidget.first.type !=
+                                        ItemType.video)) {
+                              // if (controlNotifier.mediaPath.isNotEmpty) {
                               itemProvider.draggableWidget.insert(
                                   0,
                                   EditableItem()
-                                    ..type = ItemType.image
-                                    ..position = const Offset(0.0, 0));
+                                    ..type = paths.first.type == "video"
+                                        ? ItemType.video
+                                        : ItemType.image
+                                    ..url = paths.first.path.toString()
+                                    ..isStoriesBackground = true
+                                    ..duration = paths.first.type == "video"
+                                        ? paths.first.videoDuration
+                                        : null
+                                    ..position = const Offset(0.0, 0.0));
+                            } else {
+                              double dd = GetRandomNumber(-0.25, 0.25);
+
+                              paths.forEach((element) {
+                                dd = GetRandomNumber(
+                                    dd, dd == 0.25 ? 0.2 : 0.25);
+                                itemProvider.draggableWidget.add(EditableItem()
+                                  ..type = element.type == "video"
+                                      ? ItemType.video
+                                      : ItemType.image
+                                  ..scale = paths.length == 1 ? 1.0 : 0.5
+                                  //      ..rotation = 0.5
+                                  ..url = element.path.toString()
+                                  ..duration = element.type == "video"
+                                      ? element.videoDuration
+                                      : null
+                                  ..position = paths.length == 1
+                                      ? Offset(0.0, 0.0)
+                                      : Offset(dd, dd));
+                              });
                             }
                             scrollProvider.pageController.animateToPage(0,
                                 duration: const Duration(milliseconds: 300),
@@ -674,32 +848,37 @@ class _MainViewState extends State<MainView> {
                             gridViewController: scrollProvider.gridController,
                             thumbnailQuality:
                                 widget.galleryThumbnailQuality ?? 200,
-                            singlePick: true,
-                            onlyImages: true,
+                            maxPickImages:
+                                controlNotifier.mediaPath.isEmpty ? 1 : 5, //1
+                            singlePick:
+                                controlNotifier.mediaPath.isEmpty, //true
+                            onlyImages: !canUseVideo, //true
                             appBarColor:
                                 widget.editorBackgroundColor ?? Colors.black,
                             gridViewPhysics:
                                 itemProvider.draggableWidget.isEmpty
                                     ? const NeverScrollableScrollPhysics()
                                     : const ScrollPhysics(),
-                            appBarLeadingWidget: leadingWidget(),
+                            appBarHeight: 70,
+                            appBarLeadingWidget: leadingWidget(scrollProvider),
                           ),
                         ),
                 ),
               ),
-              if (_showDialog)
-                Container(
-                    color: Colors.black.withOpacity(0.6),
-                    child: const Center(
-                      child: SizedBox(
-                        height: 30,
-                        width: 30,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 1.7,
-                          color: Colors.blue,
+              _showDialog
+                  ? Container(
+                      color: Colors.black.withOpacity(0.6),
+                      child: const Center(
+                        child: SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.7,
+                            color: Colors.blue,
+                          ),
                         ),
-                      ),
-                    )),
+                      ))
+                  : SizedBox(),
             ]);
           },
         ),
@@ -776,11 +955,18 @@ class _MainViewState extends State<MainView> {
   }
 
   /// active delete widget with offset position
-  void _deletePosition(EditableItem item, PointerMoveEvent details) {
+  void _deletePosition(
+      EditableItem item, PointerMoveEvent details, ControlNotifier controlP) {
+    var _itemProvider =
+        Provider.of<DraggableWidgetNotifier>(context, listen: false)
+            .draggableWidget;
     if (item.type == ItemType.text &&
         item.position.dy >= 0.75.h &&
         item.position.dx >= -0.4.w &&
         item.position.dx <= 0.2.w) {
+      if (!item.deletePosition) {
+        HapticFeedback.heavyImpact();
+      }
       setState(() {
         _isDeletePosition = true;
         item.deletePosition = true;
@@ -789,6 +975,21 @@ class _MainViewState extends State<MainView> {
         item.position.dy >= 0.62.h &&
         item.position.dx >= -0.35.w &&
         item.position.dx <= 0.15) {
+      if (!item.deletePosition) {
+        HapticFeedback.heavyImpact();
+      }
+      setState(() {
+        _isDeletePosition = true;
+        item.deletePosition = true;
+      });
+    } else if (!item.isStoriesBackground &&
+        (item.type == ItemType.image || item.type == ItemType.video) &&
+        item.position.dy >= 0.52.h &&
+        item.position.dx >= -0.2.w &&
+        item.position.dx <= 0.10) {
+      if (!item.deletePosition) {
+        HapticFeedback.heavyImpact();
+      }
       setState(() {
         _isDeletePosition = true;
         item.deletePosition = true;
@@ -802,12 +1003,13 @@ class _MainViewState extends State<MainView> {
   }
 
   /// delete item widget with offset position
-  void _deleteItemOnCoordinates(EditableItem item, PointerUpEvent details) {
+  void _deleteItemOnCoordinates(
+      EditableItem item, PointerUpEvent details, ControlNotifier controlP) {
     var _itemProvider =
         Provider.of<DraggableWidgetNotifier>(context, listen: false)
             .draggableWidget;
     _inAction = false;
-    if (item.type == ItemType.image) {
+    if (item.isStoriesBackground) {
     } else if (item.type == ItemType.text &&
             item.position.dy >= 0.75.h &&
             item.position.dx >= -0.4.w &&
@@ -815,7 +1017,15 @@ class _MainViewState extends State<MainView> {
         item.type == ItemType.gif &&
             item.position.dy >= 0.62.h &&
             item.position.dx >= -0.35.w &&
-            item.position.dx <= 0.15) {
+            item.position.dx <= 0.15 ||
+        item.type == ItemType.image &&
+            item.position.dy >= 0.52.h &&
+            item.position.dx >= -0.20.w &&
+            item.position.dx <= 0.10 ||
+        item.type == ItemType.video &&
+            item.position.dy >= 0.52.h &&
+            item.position.dx >= -0.20.w &&
+            item.position.dx <= 0.10) {
       setState(() {
         _itemProvider.removeAt(_itemProvider.indexOf(item));
         HapticFeedback.heavyImpact();
