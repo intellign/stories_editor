@@ -21,6 +21,7 @@ class TopTools extends StatefulWidget {
   final Function(String draftPath)? saveDraftCallback;
   final Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
       recordCallback;
+  final Widget? addMediaTopWidget;
 
   const TopTools({
     Key? key,
@@ -31,6 +32,7 @@ class TopTools extends StatefulWidget {
     this.giphyRating,
     this.recordCallback,
     this.giphyLanguage,
+    this.addMediaTopWidget,
   }) : super(key: key);
 
   @override
@@ -143,6 +145,7 @@ class _TopToolsState extends State<TopTools> {
                               widget.giphyRating, //controlNotifier.giphyRating,
                           giphyLanguage: widget
                               .giphyLanguage, //controlNotifier.giphyLanguage,
+                          addMediaTopWidget: widget.addMediaTopWidget,
                         )),
                 ToolButton(
                     child: const ImageIcon(
