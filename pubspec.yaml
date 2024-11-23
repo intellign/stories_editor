@@ -44,7 +44,11 @@ dependencies:
   #gallery_media_picker: ^0.1.0
 
 
-  modal_gif_picker: ^0.0.2
+  #modal_gif_picker: ^0.0.2
+  modal_gif_picker:
+    git:
+      url: https://github.com/intellign/modal_gif_picker
+  
   # painting
   perfect_freehand: ^1.0.4
   # positioning
