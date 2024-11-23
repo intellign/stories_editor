@@ -175,7 +175,7 @@ Future<bool> exitDialog({
         barrierDismissible: true,
         builder: (BuildContext dialogContext) => Dialog(
           backgroundColor: Colors.transparent,
-          elevation: 0.7,
+          elevation: 0.0,
           insetAnimationDuration: const Duration(milliseconds: 300),
           insetAnimationCurve: Curves.ease,
           child: Padding(
