@@ -97,20 +97,21 @@ class DraggableWidget extends StatelessWidget {
 
       /// image [file_image_gb.dart]
       case ItemType.image:
-        if (_controlProvider.mediaPath.isNotEmpty) {
-          overlayWidget = SizedBox(
-            width: screenUtil.screenWidth - 144.w,
-            child: FileImageBG(
-              filePath: File(_controlProvider.mediaPath),
-              generatedGradient: (color1, color2) {
-                _colorProvider.color1 = color1;
-                _colorProvider.color2 = color2;
-              },
-            ),
-          );
-        } else {
-          overlayWidget = Container();
-        }
+        //   if (_controlProvider.mediaPath.isNotEmpty) {
+        overlayWidget = AnimatedOnTapButton(
+            onTap: () =>
+                _onTapOther(context, draggableWidget, _controlProvider),
+            child: SizedBox(
+              width: screenUtil.screenWidth - 144.w,
+              child: FileImageBG(
+                filePath: File(draggableWidget.url),
+                generatedGradient: (color1, color2) {
+                  _colorProvider.color1 = color1;
+                  _colorProvider.color2 = color2;
+                },
+              ),
+            ));
+        //  } else { overlayWidget = Container(); }
 
         break;
 
@@ -118,22 +119,26 @@ class DraggableWidget extends StatelessWidget {
         overlayWidget = SizedBox(
           width: 150,
           height: 150,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              /// create Gif widget
-              Center(
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.transparent),
-                  child: GiphyRenderImage.original(gif: draggableWidget.gif),
-                ),
-              ),
-            ],
-          ),
+          child: AnimatedOnTapButton(
+              onTap: () =>
+                  _onTapOther(context, draggableWidget, _controlProvider),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  /// create Gif widget
+                  Center(
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.transparent),
+                      child:
+                          GiphyRenderImage.original(gif: draggableWidget.gif),
+                    ),
+                  ),
+                ],
+              )),
         );
         break;
 
@@ -261,7 +266,8 @@ class DraggableWidget extends StatelessWidget {
     if (draggableWidget.type == ItemType.text) {
       top = screenUtil.screenWidth / 1.2;
       return top;
-    } else if (draggableWidget.type == ItemType.gif) {
+    } else if (draggableWidget.type == ItemType.gif ||
+        draggableWidget.type != ItemType.gif) {
       top = screenUtil.screenWidth / 1.18;
       return top;
     }
@@ -272,9 +278,33 @@ class DraggableWidget extends StatelessWidget {
     if (draggableWidget.type == ItemType.text) {
       scale = 0.4;
       return scale;
-    } else if (draggableWidget.type == ItemType.gif) {
+    } else if (draggableWidget.type == ItemType.gif ||
+        draggableWidget.type != ItemType.gif) {
       scale = 0.3;
       return scale;
+    }
+  }
+
+  /// onTap text
+  void _onTapOther(BuildContext context, EditableItem item,
+      ControlNotifier controlNotifier) {
+    var _itemProvider =
+        Provider.of<DraggableWidgetNotifier>(this.context, listen: false);
+    if (item != _itemProvider.draggableWidget.last) {
+      _itemProvider.draggableWidget
+          .removeAt(_itemProvider.draggableWidget.indexOf(item));
+      _itemProvider.draggableWidget.add(EditableItem()
+        ..type = item.type
+        ..url = item.url
+        ..position = item.position
+        ..duration = item.duration
+        ..scale = item.scale
+        ..rotation = item.rotation
+        ..gif = item.gif
+        ..deletePosition = item.deletePosition
+        ..backGroundColor = item.backGroundColor
+        ..isStoriesBackground = item.isStoriesBackground
+        ..text = item.text);
     }
   }
 
