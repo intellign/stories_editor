@@ -15,6 +15,7 @@ class BottomTools extends StatelessWidget {
   final Function(String imageUri) onDone;
   final Widget? onDoneButtonStyle;
   final Widget? permissionWidget;
+  final Function() showAddMoreMediaF;
   final Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
       recordCallback;
 
@@ -24,6 +25,7 @@ class BottomTools extends StatelessWidget {
       {Key? key,
       required this.contentKey,
       required this.onDone,
+      required this.showAddMoreMediaF,
       this.onDoneButtonStyle,
       this.permissionWidget,
       this.recordCallback,
@@ -60,14 +62,11 @@ class BottomTools extends StatelessWidget {
                                       child: GestureDetector(
                                         onTap: () {
                                           /// scroll to gridView page
-                                          if (controlNotifier
-                                              .mediaPath.isEmpty) {
-                                            scrollNotifier.pageController
-                                                .animateToPage(1,
-                                                    duration: const Duration(
-                                                        milliseconds: 300),
-                                                    curve: Curves.ease);
-                                          }
+                                          scrollNotifier.pageController
+                                              .animateToPage(1,
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  curve: Curves.ease);
                                         },
                                         child: CoverThumbnail(
                                           permissionWidget: permissionWidget,
@@ -77,6 +76,28 @@ class BottomTools extends StatelessWidget {
 
                                   /// return clear [imagePath] provider
                                   : GestureDetector(
+                                      onVerticalDragStart: controlNotifier
+                                              .mediaPath.isNotEmpty
+                                          ? (details) {
+                                              /// scroll to gridView page
+                                              scrollNotifier.pageController
+                                                  .animateToPage(1,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.ease);
+                                            }
+                                          : null,
+                                      onVerticalDragCancel: controlNotifier
+                                              .mediaPath.isNotEmpty
+                                          ? () {
+                                              /// scroll to gridView page
+                                              scrollNotifier.pageController
+                                                  .animateToPage(0,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.ease);
+                                            }
+                                          : null,
                                       onTap: () {
                                         /// clear image url variable
                                         controlNotifier.mediaPath = '';
@@ -110,7 +131,35 @@ class BottomTools extends StatelessWidget {
                           child: Center(
                             child: Container(
                                 alignment: Alignment.bottomCenter,
-                                child: controlNotifier.middleBottomWidget),
+                                child: GestureDetector(
+                                  onVerticalDragStart:
+                                      controlNotifier.mediaPath.isNotEmpty
+                                          ? (details) {
+                                              /// scroll to gridView page
+                                              scrollNotifier.pageController
+                                                  .animateToPage(1,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.ease);
+                                            }
+                                          : null,
+                                  onVerticalDragCancel:
+                                      controlNotifier.mediaPath.isNotEmpty
+                                          ? () {
+                                              /// scroll to gridView page
+                                              scrollNotifier.pageController
+                                                  .animateToPage(0,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.ease);
+                                            }
+                                          : null,
+                                  onTap: () {
+                                    showAddMoreMediaF();
+                                  },
+                                  child: controlNotifier.middleBottomWidget,
+                                  //Icon(Icons.add_box_rounded,color: Colors.white,size: 17,)
+                                )),
                           ),
                         )
                       else
@@ -150,8 +199,8 @@ class BottomTools extends StatelessWidget {
                                   if (recordCallback != null &&
                                       (itemNotifier.draggableWidget.indexWhere(
                                               (element) =>
-                                           element.animationType !=
-                                                  TextAnimationType.none ||
+                                                  element.animationType !=
+                                                      TextAnimationType.none ||
                                                   element.type ==
                                                       ItemType.gif ||
                                                   element.type ==
