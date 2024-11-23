@@ -26,6 +26,8 @@ class EditableItem {
   /// Gif
   GiphyGif gif = GiphyGif(id: '0');
 
-    // - new
+  // - new
   Duration? duration = null;
+  String url = "";
+  bool isStoriesBackground = false;
 }
