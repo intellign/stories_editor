@@ -40,6 +40,9 @@ class StoriesEditor extends StatefulWidget {
   /// on done
   final Function(String)? onDone;
 
+  /// on camera
+  final Function? onCamera;
+
   /// on done button Text
   final Widget? onDoneButtonStyle;
 
@@ -66,6 +69,7 @@ class StoriesEditor extends StatefulWidget {
     required this.appname,
     required this.giphyKey,
     required this.onDone,
+    this.onCamera,
     required this.permissionWidget,
     this.giphyRating,
     this.giphyLanguage,
@@ -131,6 +135,7 @@ class _StoriesEditorState extends State<StoriesEditor> {
             giphyLanguage: widget.giphyLanguage,
             giphyRating: widget.giphyRating,
             onDone: widget.onDone,
+            onCamera: widget.onCamera,
             permissionWidget: widget.permissionWidget,
             fontFamilyList: widget.fontFamilyList,
             isCustomFontList: widget.isCustomFontList,
