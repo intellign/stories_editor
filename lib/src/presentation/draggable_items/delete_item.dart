@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:stories_editor/src/domain/models/editable_items.dart';
 import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
+import 'package:stories_editor/src/domain/providers/notifiers/control_provider.dart';
+import 'package:stories_editor/src/domain/providers/notifiers/draggable_widget_notifier.dart';
 
 class DeleteItem extends StatelessWidget {
   const DeleteItem(
@@ -9,6 +11,8 @@ class DeleteItem extends StatelessWidget {
       required EditableItem? activeItem,
       required this.isDeletePosition,
       required this.animationsDuration,
+      required this.controlNotifier,
+      required this.itemProvider,
       this.deletedItem})
       : _activeItem = activeItem,
         super(key: key);
@@ -17,6 +21,9 @@ class DeleteItem extends StatelessWidget {
   final bool isDeletePosition;
   final Duration animationsDuration;
   final Widget? deletedItem;
+
+  final ControlNotifier controlNotifier;
+  final DraggableWidgetNotifier itemProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +36,9 @@ class DeleteItem extends StatelessWidget {
         child: AnimatedScale(
           curve: Curves.easeIn,
           duration: const Duration(milliseconds: 200),
-          scale: _activeItem != null && _activeItem!.type != ItemType.image
+          scale: _activeItem != null &&
+                  (!_activeItem!
+                      .isStoriesBackground) //_activeItem!.type != ItemType.image
               ? 1.0
               : 0.0,
           child: SizedBox(
