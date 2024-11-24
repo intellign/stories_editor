@@ -10,6 +10,34 @@ dependencies:
   flutter:
     sdk: flutter
 
+  #deep edits
+  video_editor: ^3.0.0
+  permission_handler: ^11.0.0
+  image_picker: ^1.0.4 
+  dio: ^5.1.1
+  flutter_cache_manager: ^3.3.0
+  video_player: ^2.7.2 
+
+  
+  # state management
+  provider: ^6.0.4
+  # image
+  image: ^3.2.2
+  path_provider: ^2.0.11
+  photo_view: ^0.14.0
+  # with this ref fix `Looking up a deactivated widget's ancestor is unsafe`.
+  #photo_view:
+  #  git:
+  #    url: https://github.com/bluefireteam/photo_view
+  #    ref: 8156907eecfa812b181a5a729d790f6d399f311b
+  image_gallery_saver: ^1.7.1
+  
+  #own packages
+  #modal_gif_picker: ^0.0.2
+  modal_gif_picker:
+    git:
+      url: https://github.com/intellign/modal_gif_picker
+
   screen_recorder:
     git:
       url: https://github.com/intellign/screenrecorder
@@ -24,30 +52,12 @@ dependencies:
 
   #screen_recorder: ^0.2.0
   
+  #gallery_media_picker: ^0.1.0
   gallery_media_picker:
     git:
       url: https://github.com/intellign/gallery_media_picker.git
      # ref: master
-  # state management
-  provider: ^6.0.4
-  # image
-  image: ^3.2.2
-  path_provider: ^2.0.11
-  photo_view: ^0.14.0
-  # with this ref fix `Looking up a deactivated widget's ancestor is unsafe`.
-  #photo_view:
-  #  git:
-  #    url: https://github.com/bluefireteam/photo_view
-  #    ref: 8156907eecfa812b181a5a729d790f6d399f311b
-  image_gallery_saver: ^1.7.1
-  #own packages
-  #gallery_media_picker: ^0.1.0
 
-
-  #modal_gif_picker: ^0.0.2
-  modal_gif_picker:
-    git:
-      url: https://github.com/intellign/modal_gif_picker
   
   # painting
   perfect_freehand: ^1.0.4
