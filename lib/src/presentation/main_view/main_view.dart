@@ -413,7 +413,7 @@ class _MainViewState extends State<MainView> {
         CircularButtonDesign(
             onTap: () async {
               Navigator.of(context).pop();
-              await Future.delayed(Duration(milliseconds: 700));
+              await Future.delayed(Duration(milliseconds: 200));
               if (widget.onCamera != null) {
                 final file = await widget.onCamera!(context);
                 if (file != null) {
@@ -441,7 +441,7 @@ class _MainViewState extends State<MainView> {
           onTap: () async {
             /// scroll to gridView page
             Navigator.of(context).pop();
-            await Future.delayed(Duration(milliseconds: 700));
+            await Future.delayed(Duration(milliseconds: 50));
             scrollProvider.pageController.animateToPage(1,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.ease);
