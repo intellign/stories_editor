@@ -40,9 +40,6 @@ class StoriesEditor extends StatefulWidget {
   /// on done
   final Function(String)? onDone;
 
-  /// on camera
-  final Function? onCamera;
-
   /// on done button Text
   final Widget? onDoneButtonStyle;
 
@@ -61,7 +58,16 @@ class StoriesEditor extends StatefulWidget {
   /// editor init file
   File? starterFile;
 
+  /// maxFileSizeAllowedInMB
+  final int maxFileSizeAllowedInMB;
+
+  /// androidSDKVersion
+  final int androidSDKVersion;
+
+  /// showSaveDraft
   final bool? showSaveDraftOption;
+
+  /// showSaveDraftCallback
   final Function(String draftPath)? saveDraftCallback;
 
   StoriesEditor({
@@ -69,7 +75,6 @@ class StoriesEditor extends StatefulWidget {
     required this.appname,
     required this.giphyKey,
     required this.onDone,
-    this.onCamera,
     required this.permissionWidget,
     this.giphyRating,
     this.giphyLanguage,
@@ -85,6 +90,8 @@ class StoriesEditor extends StatefulWidget {
     this.starterFile,
     this.showSaveDraftOption,
     this.saveDraftCallback,
+    required this.maxFileSizeAllowedInMB,
+    required this.androidSDKVersion,
   }) : super(key: key);
 
   @override
@@ -135,7 +142,6 @@ class _StoriesEditorState extends State<StoriesEditor> {
             giphyLanguage: widget.giphyLanguage,
             giphyRating: widget.giphyRating,
             onDone: widget.onDone,
-            onCamera: widget.onCamera,
             permissionWidget: widget.permissionWidget,
             fontFamilyList: widget.fontFamilyList,
             isCustomFontList: widget.isCustomFontList,
@@ -149,6 +155,8 @@ class _StoriesEditorState extends State<StoriesEditor> {
             starterFile: widget.starterFile,
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
+            maxFileSizeAllowedInMB: widget.maxFileSizeAllowedInMB,
+            androidSDKVersion: widget.androidSDKVersion,
           ),
         ),
       ),
