@@ -33,6 +33,8 @@ import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.da
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 import 'package:stories_editor/src/presentation/widgets/circularButtonDesign.dart';
+
+import 'package:stories_editor/src/presentation/utils/storiesCameraFeature.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:render/render.dart';
@@ -64,9 +66,6 @@ class MainView extends StatefulWidget {
   /// on done
   final Function(String)? onDone;
 
-  /// on camera
-  final Function? onCamera;
-
   /// on done button Text
   final Widget? onDoneButtonStyle;
 
@@ -85,7 +84,16 @@ class MainView extends StatefulWidget {
   /// editor init file
   File? starterFile;
 
+  /// maxFileSizeAllowedInMB
+  final int maxFileSizeAllowedInMB;
+
+  /// androidSDKVersion
+  final int androidSDKVersion;
+
+  /// showSaveDraft
   final bool? showSaveDraftOption;
+
+  /// showSaveDraftCallback
   final Function(String draftPath)? saveDraftCallback;
 
   MainView({
@@ -93,7 +101,6 @@ class MainView extends StatefulWidget {
     required this.appname,
     required this.giphyKey,
     required this.onDone,
-    this.onCamera,
     required this.permissionWidget,
     this.giphyRating,
     this.giphyLanguage,
@@ -109,6 +116,8 @@ class MainView extends StatefulWidget {
     this.starterFile,
     this.showSaveDraftOption,
     this.saveDraftCallback,
+    required this.maxFileSizeAllowedInMB,
+    required this.androidSDKVersion,
   }) : super(key: key);
 
   @override
@@ -404,8 +413,9 @@ class _MainViewState extends State<MainView> {
 
   bool whiteTheme = false;
 
-  Widget addMediaTopWidget(
-      ScrollNotifier scrollProvider, DraggableWidgetNotifier itemProvider) {
+  Widget addMediaTopWidget(ScrollNotifier scrollProvider,
+      DraggableWidgetNotifier itemProvider, ControlNotifier controlNotifier,
+      {bool isVideo = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -414,24 +424,15 @@ class _MainViewState extends State<MainView> {
             onTap: () async {
               Navigator.of(context).pop();
               await Future.delayed(Duration(milliseconds: 200));
-              if (widget.onCamera != null) {
-                final file = await widget.onCamera!(context);
-                if (file != null) {
-                  print("9999999-${file.path}");
-                  String path = file.path;
-                  itemProvider.draggableWidget.add(EditableItem()
-                    ..type = path.endsWith(".mp4") || path.endsWith(".mov")
-                        ? ItemType.video
-                        : ItemType.image
-                    ..scale = 0.5
-                    //   ..rotation = 0.5
-                    ..url = path
-                    //   ..duration =...TODO?...
-                    ..position = Offset(0.0, 0.0));
-                } else {
-                  print("uuuuuuuuu");
-                }
-              }
+
+              StoriesCameraFeature.maxFileSizeAllowedInMB =
+                  widget.maxFileSizeAllowedInMB;
+              StoriesCameraFeature.androidSDKVersion = widget.androidSDKVersion;
+
+              await (isVideo
+                  ? StoriesCameraFeature.onTakeVideo(context, itemProvider)
+                  : StoriesCameraFeature.onTakePictureButtonPressed(
+                      context, itemProvider));
             },
             whiteTheme: !whiteTheme,
             icon: Icons.camera_alt_rounded),
@@ -440,6 +441,9 @@ class _MainViewState extends State<MainView> {
           icon: Icons.photo_rounded,
           onTap: () async {
             /// scroll to gridView page
+
+            controlNotifier.multiForNow = true;
+
             Navigator.of(context).pop();
             await Future.delayed(Duration(milliseconds: 50));
             scrollProvider.pageController.animateToPage(1,
@@ -458,7 +462,8 @@ class _MainViewState extends State<MainView> {
     );
   }
 
-  Widget leadingWidget(ScrollNotifier scrollProvider) {
+  Widget leadingWidget(
+      ScrollNotifier scrollProvider, ControlNotifier controlNotifier) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15, right: 15),
       child: Align(
@@ -468,6 +473,8 @@ class _MainViewState extends State<MainView> {
             scrollProvider.pageController.animateToPage(0,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeIn);
+
+            controlNotifier.multiForNow = false;
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -494,6 +501,7 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     final ScreenUtil screenUtil = ScreenUtil();
+
     return WillPopScope(
       onWillPop: _popScope,
       child: Material(
@@ -718,7 +726,9 @@ class _MainViewState extends State<MainView> {
                                       });
                                     },
                                     addMediaTopWidget: addMediaTopWidget(
-                                        scrollProvider, itemProvider),
+                                        scrollProvider,
+                                        itemProvider,
+                                        controlNotifier),
                                   )),
                             ),
 
@@ -759,7 +769,9 @@ class _MainViewState extends State<MainView> {
                               context,
                               scrollProvider,
                               addMediaTopWidget: addMediaTopWidget(
-                                  scrollProvider, itemProvider),
+                                  scrollProvider,
+                                  itemProvider,
+                                  controlNotifier),
                               whiteTheme: whiteTheme,
                             );
                           },
@@ -789,7 +801,8 @@ class _MainViewState extends State<MainView> {
                           Container(
                               margin: EdgeInsets.only(top: 11),
                               //  height: 100,
-                              child: leadingWidget(scrollProvider)),
+                              child: leadingWidget(
+                                  scrollProvider, controlNotifier)),
                           Container(
                               margin: EdgeInsets.only(top: 11),
                               height: MediaQuery.of(context).size.height / 1.25,
@@ -798,14 +811,15 @@ class _MainViewState extends State<MainView> {
                                   child: widget.permissionWidget!)),
                         ])
                       : GalleryMediaPicker(
+                          multiForNow: controlNotifier.multiForNow,
                           pathList: (List<PickedAssetModel> paths) {
-                            controlNotifier.mediaPath =
-                                paths.first.path.toString();
-                            if (itemProvider.draggableWidget.isEmpty ||
-                                (itemProvider.draggableWidget.first.type !=
-                                        ItemType.image &&
-                                    itemProvider.draggableWidget.first.type !=
-                                        ItemType.video)) {
+                            if (!controlNotifier.multiForNow &&
+                                controlNotifier.mediaPath.isEmpty) {
+                              //  if (itemProvider.draggableWidget.isEmpty) {
+                              //background
+                              controlNotifier.mediaPath =
+                                  paths.first.path.toString();
+                              // }
                               // if (controlNotifier.mediaPath.isNotEmpty) {
                               itemProvider.draggableWidget.insert(
                                   0,
@@ -820,11 +834,9 @@ class _MainViewState extends State<MainView> {
                                         : null
                                     ..position = const Offset(0.0, 0.0));
                             } else {
-                              double dd = GetRandomNumber(-0.25, 0.25);
+                              double randDouble = GetRandomNumber(-0.25, 0.25);
 
                               paths.forEach((element) {
-                                dd = GetRandomNumber(
-                                    dd, dd == 0.25 ? 0.2 : 0.25);
                                 itemProvider.draggableWidget.add(EditableItem()
                                   ..type = element.type == "video"
                                       ? ItemType.video
@@ -837,21 +849,28 @@ class _MainViewState extends State<MainView> {
                                       : null
                                   ..position = paths.length == 1
                                       ? Offset(0.0, 0.0)
-                                      : Offset(dd, dd));
+                                      : Offset(randDouble, randDouble));
+                                randDouble = GetRandomNumber(randDouble,
+                                    randDouble == 0.25 ? 0.2 : 0.25);
                               });
                             }
                             scrollProvider.pageController.animateToPage(0,
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeIn);
+                            controlNotifier.multiForNow = false;
                           },
                           mediaPickerParams: MediaPickerParamsModel(
                             gridViewController: scrollProvider.gridController,
                             thumbnailQuality:
                                 widget.galleryThumbnailQuality ?? 200,
                             maxPickImages:
-                                controlNotifier.mediaPath.isEmpty ? 1 : 5, //1
-                            singlePick:
-                                controlNotifier.mediaPath.isEmpty, //true
+                                controlNotifier.multiForNow == true ||
+                                        controlNotifier.mediaPath.isNotEmpty
+                                    ? 5
+                                    : 1, //1
+                            singlePick: controlNotifier.multiForNow == true
+                                ? false
+                                : controlNotifier.mediaPath.isEmpty, //true
                             onlyImages: !canUseVideo, //true
                             appBarColor:
                                 widget.editorBackgroundColor ?? Colors.black,
@@ -859,8 +878,10 @@ class _MainViewState extends State<MainView> {
                                 itemProvider.draggableWidget.isEmpty
                                     ? const NeverScrollableScrollPhysics()
                                     : const ScrollPhysics(),
+                            selectedCheckBackgroundColor: Colors.blue,
                             appBarHeight: 70,
-                            appBarLeadingWidget: leadingWidget(scrollProvider),
+                            appBarLeadingWidget:
+                                leadingWidget(scrollProvider, controlNotifier),
                           ),
                         ),
                 ),
