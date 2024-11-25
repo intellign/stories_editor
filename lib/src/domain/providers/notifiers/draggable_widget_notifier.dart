@@ -20,4 +20,8 @@ class DraggableWidgetNotifier extends ChangeNotifier {
   setDefaults() {
     _draggableWidget = [];
   }
+
+  updatedNeedsRefresh() {
+    notifyListeners();
+  }
 }
