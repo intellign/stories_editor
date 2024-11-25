@@ -137,4 +137,12 @@ class ControlNotifier extends ChangeNotifier {
     _isTextShadow = val;
     notifyListeners();
   }
+
+  bool get multiForNow => _multiForNow;
+  bool _multiForNow = false;
+  set multiForNow(bool multiForNow) {
+    _multiForNow = multiForNow;
+
+    notifyListeners();
+  }
 }
