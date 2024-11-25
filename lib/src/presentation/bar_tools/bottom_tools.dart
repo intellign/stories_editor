@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gallery_media_picker/gallery_media_picker.dart';
@@ -71,6 +72,9 @@ class BottomTools extends StatelessWidget {
                                         child: CoverThumbnail(
                                           permissionWidget: permissionWidget,
                                           thumbnailQuality: 150,
+                                          viewIndex: scrollNotifier
+                                              .pageController.page!
+                                              .round(),
                                         ),
                                       ))
 
@@ -107,18 +111,53 @@ class BottomTools extends StatelessWidget {
                                               .removeAt(0);
                                         }
                                       },
-                                      child: Container(
-                                        height: 45,
-                                        width: 45,
-                                        color: Colors.transparent,
-                                        child: Transform.scale(
-                                          scale: 0.7,
-                                          child: const Icon(
-                                            Icons.delete,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
+                                      child: true
+                                          ? Stack(
+                                              alignment:
+                                                  AlignmentDirectional.center,
+                                              children: [
+                                                  Container(
+                                                      height: 45,
+                                                      width: 45,
+                                                      // color: Colors.transparent,
+
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                        child: Image.file(
+                                                          File(controlNotifier
+                                                              .mediaPath),
+                                                          fit: BoxFit.fill,
+                                                        ),
+                                                      )),
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.white
+                                                            .withOpacity(0.5),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8)),
+                                                  ),
+                                                  Transform.scale(
+                                                    scale: 0.7,
+                                                    child: const Icon(
+                                                      Icons.delete,
+                                                      size: 29,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ])
+                                          : Container(
+                                              height: 45,
+                                              width: 45,
+                                              // color: Colors.transparent,
+
+                                              child: Container(
+                                                color: Colors.white
+                                                    .withOpacity(0.5),
+                                              ),
+                                            ),
                                     ),
                             ),
                           ),
