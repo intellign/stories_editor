@@ -106,8 +106,10 @@ class DraggableWidget extends StatelessWidget {
               child: FileImageBG(
                 filePath: File(draggableWidget.url),
                 generatedGradient: (color1, color2) {
-                  _colorProvider.color1 = color1;
-                  _colorProvider.color2 = color2;
+                  if (draggableWidget.isStoriesBackground) {
+                    _colorProvider.color1 = color1;
+                    _colorProvider.color2 = color2;
+                  }
                 },
               ),
             ));
