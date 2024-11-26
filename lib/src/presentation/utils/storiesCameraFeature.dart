@@ -13,6 +13,7 @@ import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as p;
+import 'package:video_player/video_player.dart';
 
 class StoriesCameraFeature {
   static int maxFileSizeAllowedInMB = 00;
@@ -142,19 +143,32 @@ class StoriesCameraFeature {
       DraggableWidgetNotifier itemProvider) async {
     if (selectedMedia == null) {
     } else {
-      addFile(bool isVideo) {
-        //     var itemProvider =
-        //       Provider.of<DraggableWidgetNotifier>(context, listen: false);
+      addFile(bool isVideo) async {
         if (cameraFile != null) {
+          Duration? duration;
+
+          int index = itemProvider.draggableWidget.isEmpty
+              ? 0
+              : itemProvider.draggableWidget.length - 1;
+
           String path = cameraFile!.path;
           itemProvider.draggableWidget.add(EditableItem()
             ..type = isVideo ? ItemType.video : ItemType.image
             ..scale = 0.5
             //   ..rotation = 0.5
             ..url = path
-            //   ..duration =...// TODO?...
             ..position = Offset(0.0, 0.0));
           itemProvider.updatedNeedsRefresh();
+
+          if (isVideo) {
+            VideoPlayerController vc = VideoPlayerController.file(cameraFile!);
+            await vc.initialize();
+            duration = vc.value.duration;
+            vc.dispose();
+            if (duration != null) {
+              itemProvider.draggableWidget[index].duration = duration;
+            }
+          }
         } else {
           Fluttertoast.showToast(
               msg: '⚠️⚠️', //error
