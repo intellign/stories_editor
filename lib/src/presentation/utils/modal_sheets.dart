@@ -11,6 +11,7 @@ import 'package:stories_editor/src/domain/providers/notifiers/painting_notifier.
 import 'package:stories_editor/src/domain/providers/notifiers/text_editing_notifier.dart';
 import 'package:stories_editor/src/domain/providers/notifiers/scroll_notifier.dart';
 import 'package:stories_editor/src/domain/sevices/save_as_image.dart';
+import 'package:stories_editor/src/domain/sevices/downloadMedia.dart';
 import 'package:stories_editor/src/presentation/utils/Extensions/hexColor.dart';
 import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
@@ -41,10 +42,30 @@ Future createGiphyItem(
 
   /// create item of type GIF
   if (_editableItem.giphy != null) {
+    int index = _editableItem.draggableWidget.isEmpty
+        ? 0
+        : _editableItem.draggableWidget.length - 1;
+
     _editableItem.draggableWidget.add(EditableItem()
       ..type = ItemType.gif
       ..gif = _editableItem.giphy!
       ..position = const Offset(0.0, 0.0));
+
+    Duration? duration;
+    String gifUrl = "";
+    if (_editableItem.giphy!.images.original!.webp != null) {
+      gifUrl = _editableItem.giphy!.images.original!.webp!;
+      DownloadMedia.downloadFile(gifUrl, callback: (file) async {
+        duration = await extractGifDuration(file.path);
+
+        if (gifUrl.isNotEmpty) {
+          DownloadMedia.removeFile(gifUrl);
+        }
+        if (duration != null) {
+          _editableItem.draggableWidget[index].duration = duration;
+        }
+      });
+    }
   }
 }
 
