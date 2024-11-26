@@ -35,7 +35,9 @@ import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker
 import 'package:stories_editor/src/presentation/widgets/circularButtonDesign.dart';
 
 import 'package:stories_editor/src/presentation/utils/storiesCameraFeature.dart';
+import 'package:video_player/video_player.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter/rendering.dart';
 
 import 'package:render/render.dart';
 import 'package:path_provider/path_provider.dart';
@@ -169,27 +171,64 @@ class _MainViewState extends State<MainView> {
       final GalleryMediaPickerController provider =
           GalleryMediaPickerController();
 
+      var scrollProvider = Provider.of<ScrollNotifier>(context, listen: false);
+      scrollProvider.pageController.addListener(scrollProvider_listener);
+
       if (widget.permissionWidget == null) {
         await GalleryFunctions.getPermission(setState, provider);
       }
 
       if (widget.starterFile != null) {
-        Future.delayed(Duration(seconds: 5), () {
+        Future.delayed(Duration(milliseconds: 1500), () async {
           _control.mediaPath = widget.starterFile!.path;
-          /*      _control.mediaPath = provider.pathList.isNotEmpty
-              ? provider.pathList[0].name
-              : widget
-                  .starterFile!.path; //TODO create PickedAssetModel() from file
-                  */
-          setState(() {});
+          var _itemProvider =
+              Provider.of<DraggableWidgetNotifier>(context, listen: false);
+          bool isVideo =
+              !getDocumentType(widget.starterFile!.path).contains("image");
+          Duration? duration;
+
+          _itemProvider.draggableWidget.insert(
+              0,
+              EditableItem()
+                ..type = isVideo ? ItemType.video : ItemType.image
+                ..url = widget.starterFile!.path
+                ..isStoriesBackground = true
+                ..position = const Offset(0.0, 0.0));
+
+          _itemProvider.updatedNeedsRefresh();
+          if (isVideo) {
+            VideoPlayerController vc =
+                VideoPlayerController.file(widget.starterFile!);
+            await vc.initialize();
+            duration = vc.value.duration;
+            vc.dispose();
+            if (duration != null) {
+              _itemProvider.draggableWidget[0].duration = duration;
+            }
+          }
         });
       }
     });
     super.initState();
   }
 
+  void scrollProvider_listener() {
+    var controlNotifier = Provider.of<ControlNotifier>(context, listen: false);
+    var scrollProvider = Provider.of<ScrollNotifier>(context, listen: false);
+
+    if (scrollProvider.pageController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      debugPrint('swiped to mainview');
+      if (controlNotifier.multiForNow) controlNotifier.multiForNow = false;
+    } else {
+      debugPrint('swiped to gallery');
+    }
+  }
+
   @override
   void dispose() {
+    var scrollProvider = Provider.of<ScrollNotifier>(context, listen: false);
+    scrollProvider.pageController.removeListener(scrollProvider_listener);
     super.dispose();
   }
 
@@ -209,13 +248,24 @@ class _MainViewState extends State<MainView> {
   // late Stream<RenderNotifier> stream;
   //Widget? wid;
 
-  recordWidget(int? duration, bool doneCallbackBool, bool saveToGallery) async {
+  recordWidget(DraggableWidgetNotifier itemProvider, int? duration,
+      bool doneCallbackBool, bool saveToGallery) async {
     setState(() {
       _showDialog = true;
     });
+    if (duration == null) {
+      int longestDuration = 0;
+      itemProvider.draggableWidget.forEach((element) {
+        if (element.duration != null &&
+            element.duration!.inSeconds > longestDuration) {
+          longestDuration = element.duration!.inSeconds;
+        }
+      });
+      duration = longestDuration;
+    }
 
     final stream = controller.captureMotionWithStream(
-      Duration(seconds: 5),
+      Duration(seconds: duration ?? 5),
       settings: const MotionSettings(
           //  pixelRatio: 5,
           //frameRate: 20, //30
@@ -719,7 +769,7 @@ class _MainViewState extends State<MainView> {
                                       setState(() {
                                         hide4Record = true;
                                       });
-                                      await recordWidget(duration,
+                                      await recordWidget(itemProvider, duration,
                                           doneCallbackBool, saveToGallery);
                                       setState(() {
                                         hide4Record = false;
@@ -787,8 +837,8 @@ class _MainViewState extends State<MainView> {
                             setState(() {
                               hide4Record = true;
                             });
-                            await recordWidget(
-                                duration, doneCallbackBool, saveToGallery);
+                            await recordWidget(itemProvider, duration,
+                                doneCallbackBool, saveToGallery);
                             setState(() {
                               hide4Record = false;
                             });
@@ -912,6 +962,9 @@ class _MainViewState extends State<MainView> {
     final controlNotifier =
         Provider.of<ControlNotifier>(context, listen: false);
 
+    final itemProvider =
+        Provider.of<DraggableWidgetNotifier>(context, listen: false);
+
     /// change to false text editing
     if (controlNotifier.isTextEditing) {
       controlNotifier.isTextEditing = !controlNotifier.isTextEditing;
@@ -936,7 +989,8 @@ class _MainViewState extends State<MainView> {
               setState(() {
                 hide4Record = true;
               });
-              await recordWidget(duration, doneCallbackBool, saveToGallery);
+              await recordWidget(
+                  itemProvider, duration, doneCallbackBool, saveToGallery);
               setState(() {
                 hide4Record = false;
               });
