@@ -11,12 +11,12 @@ dependencies:
     sdk: flutter
 
   #deep edits
-  video_editor: ^2.4.0 ##3.0.0
+  video_editor: ^3.0.0
   permission_handler: ^10.0.0 ##11
   image_picker: ^1.0.4 
   dio: ^5.1.1
   flutter_cache_manager: ^3.3.0
-  video_player: ^2.4.10 ##2.7.2 
+  video_player: ^2.7.2 
 
   
   # state management
