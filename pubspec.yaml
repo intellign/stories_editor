@@ -38,6 +38,10 @@ dependencies:
     git:
       url: https://github.com/intellign/modal_gif_picker
 
+  giphy_get:
+    git:
+      url: https://github.com/intellign/giphy_get
+
   screen_recorder:
     git:
       url: https://github.com/intellign/screenrecorder
