@@ -14,6 +14,7 @@ import 'package:stories_editor/src/domain/providers/notifiers/painting_notifier.
 import 'package:stories_editor/src/domain/providers/notifiers/scroll_notifier.dart';
 import 'package:stories_editor/src/domain/providers/notifiers/text_editing_notifier.dart';
 import 'package:stories_editor/src/presentation/main_view/main_view.dart';
+import 'package:modal_gif_picker/modal_gif_picker.dart';
 
 export 'package:stories_editor/stories_editor.dart';
 
@@ -58,6 +59,9 @@ class StoriesEditor extends StatefulWidget {
   /// editor init file
   File? starterFile;
 
+  /// editor init Gif
+  GiphyGif? starterGif;
+
   /// maxFileSizeAllowedInMB
   final int maxFileSizeAllowedInMB;
 
@@ -88,6 +92,7 @@ class StoriesEditor extends StatefulWidget {
     this.editorBackgroundColor,
     this.galleryThumbnailQuality,
     this.starterFile,
+    this.starterGif,
     this.showSaveDraftOption,
     this.saveDraftCallback,
     required this.maxFileSizeAllowedInMB,
@@ -153,6 +158,7 @@ class _StoriesEditorState extends State<StoriesEditor> {
             editorBackgroundColor: widget.editorBackgroundColor,
             galleryThumbnailQuality: widget.galleryThumbnailQuality,
             starterFile: widget.starterFile,
+            starterGif: widget.starterGif,
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
             maxFileSizeAllowedInMB: widget.maxFileSizeAllowedInMB,
