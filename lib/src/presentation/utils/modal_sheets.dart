@@ -33,13 +33,18 @@ Future createGiphyItem(
     lang: giphyLanguage ?? GiphyLanguage.english,
     sticker: true,
     backDropColor: Colors.black,
-    crossAxisCount: 3,
-    childAspectRatio: 1.2,
+    crossAxisCount: 2,
+    //  crossAxisSpacing: 1.0,
+    childAspectRatio: 1.0,
     topDragColor: Colors.white.withOpacity(0.2),
     //
     addMediaTopWidget: addMediaTopWidget,
   );
 
+  addGif(_editableItem);
+}
+
+addGif(DraggableWidgetNotifier _editableItem) {
   /// create item of type GIF
   if (_editableItem.giphy != null) {
     int index = _editableItem.draggableWidget.isEmpty
