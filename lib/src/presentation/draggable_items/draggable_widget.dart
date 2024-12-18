@@ -135,8 +135,12 @@ class DraggableWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Colors.transparent),
-                      child:
-                          GiphyRenderImage.original(gif: draggableWidget.gif),
+                      child: true
+                          ? GiphyRenderImage.fixedWidth(
+                              gif: draggableWidget.gif,
+                              useUrlToSaveMemory: true,
+                            )
+                          : GiphyRenderImage.original(gif: draggableWidget.gif),
                     ),
                   ),
                 ],
