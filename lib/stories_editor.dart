@@ -14,7 +14,7 @@ import 'package:stories_editor/src/domain/providers/notifiers/painting_notifier.
 import 'package:stories_editor/src/domain/providers/notifiers/scroll_notifier.dart';
 import 'package:stories_editor/src/domain/providers/notifiers/text_editing_notifier.dart';
 import 'package:stories_editor/src/presentation/main_view/main_view.dart';
-import 'package:modal_gif_picker/modal_gif_picker.dart';
+import 'package:giphy_get/giphy_get.dart';
 
 export 'package:stories_editor/stories_editor.dart';
 
