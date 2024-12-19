@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:modal_gif_picker/modal_gif_picker.dart';
+import 'package:giphy_get/giphy_get.dart';
 import 'package:stories_editor/src/domain/models/editable_items.dart';
 
 class DraggableWidgetNotifier extends ChangeNotifier {
