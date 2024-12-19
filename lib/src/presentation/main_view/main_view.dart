@@ -33,7 +33,7 @@ import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.da
 import 'package:stories_editor/src/presentation/widgets/scrollable_pageView.dart';
 import 'package:gallery_media_picker/src/presentation/pages/gallery_media_picker_controller.dart';
 import 'package:stories_editor/src/presentation/widgets/circularButtonDesign.dart';
-import 'package:modal_gif_picker/modal_gif_picker.dart';
+import 'package:giphy_get/giphy_get.dart';
 
 import 'package:stories_editor/src/presentation/utils/storiesCameraFeature.dart';
 import 'package:video_player/video_player.dart';
