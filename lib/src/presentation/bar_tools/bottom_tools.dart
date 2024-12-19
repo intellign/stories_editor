@@ -69,13 +69,31 @@ class BottomTools extends StatelessWidget {
                                                       milliseconds: 300),
                                                   curve: Curves.ease);
                                         },
-                                        child: CoverThumbnail(
-                                          permissionWidget: permissionWidget,
-                                          thumbnailQuality: 150,
-                                          viewIndex: scrollNotifier
-                                              .pageController.page!
-                                              .round(),
-                                        ),
+                                        child: scrollNotifier
+                                                    .pageController.page ==
+                                                null
+                                            ? Container(
+                                                height: 45,
+                                                width: 45,
+                                                // color: Colors.transparent,
+
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: Image.file(
+                                                    File(controlNotifier
+                                                        .mediaPath),
+                                                    fit: BoxFit.fill,
+                                                  ),
+                                                ))
+                                            : CoverThumbnail(
+                                                permissionWidget:
+                                                    permissionWidget,
+                                                thumbnailQuality: 150,
+                                                viewIndex: scrollNotifier
+                                                    .pageController.page!
+                                                    .round(),
+                                              ),
                                       ))
 
                                   /// return clear [imagePath] provider
