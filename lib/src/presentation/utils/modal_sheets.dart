@@ -1,7 +1,9 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:modal_gif_picker/modal_gif_picker.dart';
+//import 'package:modal_gif_picker/modal_gif_picker.dart';
+import 'package:giphy_get/giphy_get.dart';
+
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import 'package:stories_editor/src/domain/models/editable_items.dart';
@@ -26,6 +28,16 @@ Future createGiphyItem(
     String? giphyLanguage}) async {
   final _editableItem =
       Provider.of<DraggableWidgetNotifier>(context, listen: false);
+
+  _editableItem.giphy = await GiphyGet.getGif(
+    context: context,
+    apiKey: giphyKey, //YOUR API KEY HERE
+    rating: giphyRating ?? GiphyRating.r,
+    lang: giphyLanguage ?? GiphyLanguage.english,
+    addMediaTopWidget: addMediaTopWidget,
+  );
+
+  /*
   _editableItem.giphy = await ModalGifPicker.pickModalSheetGif(
     context: context,
     apiKey: giphyKey,
@@ -40,6 +52,7 @@ Future createGiphyItem(
     //
     addMediaTopWidget: addMediaTopWidget,
   );
+  */
 
   addGif(_editableItem);
 }
@@ -58,8 +71,9 @@ addGif(DraggableWidgetNotifier _editableItem) {
 
     Duration? duration;
     String gifUrl = "";
-    if (_editableItem.giphy!.images.original!.webp != null) {
-      gifUrl = _editableItem.giphy!.images.original!.webp!;
+    if (_editableItem.giphy!.images != null &&
+        _editableItem.giphy!.images!.fixedWidth!.webp != null) {
+      gifUrl = _editableItem.giphy!.images!.fixedWidth!.webp!;
       DownloadMedia.downloadFile(gifUrl, callback: (file) async {
         duration = await extractGifDuration(file.path);
 
