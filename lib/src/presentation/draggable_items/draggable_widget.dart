@@ -4,7 +4,7 @@ import 'package:align_positioned/align_positioned.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:modal_gif_picker/modal_gif_picker.dart';
+//import 'package:modal_gif_picker/modal_gif_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:stories_editor/src/domain/models/editable_items.dart';
 import 'package:stories_editor/src/domain/providers/notifiers/control_provider.dart';
@@ -14,6 +14,7 @@ import 'package:stories_editor/src/domain/providers/notifiers/text_editing_notif
 import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.dart';
 import 'package:stories_editor/src/presentation/widgets/file_image_bg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DraggableWidget extends StatelessWidget {
   final EditableItem draggableWidget;
@@ -135,12 +136,16 @@ class DraggableWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Colors.transparent),
-                      child: true
+                      child:
+                          //stopped using modal_gif
+                          gifWidget(),
+                      /* true
                           ? GiphyRenderImage.fixedWidth(
                               gif: draggableWidget.gif,
                               useUrlToSaveMemory: true,
                             )
                           : GiphyRenderImage.original(gif: draggableWidget.gif),
+                          */
                     ),
                   ),
                 ],
@@ -179,6 +184,38 @@ class DraggableWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget loading() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget gifWidget() {
+    return draggableWidget.gif.images != null &&
+            draggableWidget.gif.images!.fixedWidth.webp != null
+        ? true
+            ? CachedNetworkImage(
+                imageUrl: draggableWidget.gif.images!.fixedWidth.webp!,
+                placeholder: (context, url) => loading(),
+                errorWidget: (context, url, error) => loading(),
+                imageBuilder: (context, imageProvider) => Container(
+                      //     width: w,
+                      //   height: w / 1.2,
+                      decoration: BoxDecoration(
+                        //     shape: BoxShape.circle,
+                        //  borderRadius: BorderRadius.all( Radius.circular(10)),
+                        image: DecorationImage(
+                            image: imageProvider, fit: BoxFit.fill),
+                      ),
+                    ))
+            : Image.network(
+                draggableWidget.gif.images!.fixedWidth.webp!,
+                gaplessPlayback: true,
+                fit: BoxFit.fill,
+                loadingBuilder: (context, child, loadingProgress) => loading(),
+                errorBuilder: (context, error, stackTrace) => loading(),
+              )
+        : loading();
   }
 
   /// text widget
