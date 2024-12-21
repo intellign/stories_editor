@@ -61,15 +61,20 @@ class _TopToolsState extends State<TopTools> {
                     ),
                     backGroundColor: Colors.black12,
                     onTap: () async {
-                      var res = await exitDialog(
-                        context: widget.context,
-                        contentKey: widget.contentKey,
-                        showSaveDraftOption: widget.showSaveDraftOption,
-                        saveDraftCallback: widget.saveDraftCallback,
-                        recordCallback: widget.recordCallback,
-                      );
-                      if (res) {
+                      if (paintingNotifier.lines.isEmpty &&
+                          itemNotifier.draggableWidget.isEmpty) {
                         Navigator.pop(context);
+                      } else {
+                        var res = await exitDialog(
+                          context: widget.context,
+                          contentKey: widget.contentKey,
+                          showSaveDraftOption: widget.showSaveDraftOption,
+                          saveDraftCallback: widget.saveDraftCallback,
+                          recordCallback: widget.recordCallback,
+                        );
+                        if (res) {
+                          Navigator.pop(context);
+                        }
                       }
                     }),
                 if (controlNotifier.mediaPath.isEmpty)
