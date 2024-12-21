@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:extended_image/extended_image.dart';
+
 import 'package:align_positioned/align_positioned.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
@@ -191,31 +193,90 @@ class DraggableWidget extends StatelessWidget {
   }
 
   Widget gifWidget() {
-    return draggableWidget.gif.images != null &&
-            draggableWidget.gif.images!.fixedWidth.webp != null
-        ? true
-            ? CachedNetworkImage(
-                imageUrl: draggableWidget.gif.images!.fixedWidth.webp!,
-                placeholder: (context, url) => loading(),
-                errorWidget: (context, url, error) => loading(),
-                imageBuilder: (context, imageProvider) => Container(
-                      //     width: w,
-                      //   height: w / 1.2,
-                      decoration: BoxDecoration(
-                        //     shape: BoxShape.circle,
-                        //  borderRadius: BorderRadius.all( Radius.circular(10)),
-                        image: DecorationImage(
-                            image: imageProvider, fit: BoxFit.fill),
+    double _aspectRatio = 0.0;
+    if (draggableWidget.gif.images != null) {
+      _aspectRatio =
+          (double.parse(draggableWidget.gif.images!.fixedWidth.width) /
+              double.parse(draggableWidget.gif.images!.fixedWidth.height));
+    }
+    return true
+        ? ExtendedImage.network(
+            draggableWidget.gif.images!.fixedWidth.webp!,
+            semanticLabel: draggableWidget.gif.title,
+            cache: true,
+            gaplessPlayback: true,
+            fit: BoxFit.fill,
+            headers: const {'accept': 'image/*'},
+            loadStateChanged: (state) => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              child: draggableWidget.gif.images == null
+                  ? Container()
+                  : case2(
+                      state.extendedImageLoadState,
+                      {
+                        LoadState.loading: AspectRatio(
+                          aspectRatio: _aspectRatio,
+                          child: Container(
+                            alignment: Alignment.center,
+                            color: Colors.transparent,
+                            height: 30,
+                            width: 30,
+                            child: const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation(Colors.white54),
+                              strokeWidth: 1,
+                            ),
+                          ),
+                        ),
+                        LoadState.completed: AspectRatio(
+                          aspectRatio: _aspectRatio,
+                          child: ExtendedRawImage(
+                            fit: BoxFit.fill,
+                            image: state.extendedImageInfo?.image,
+                          ),
+                        ),
+                        LoadState.failed: AspectRatio(
+                          aspectRatio: _aspectRatio,
+                          child: Container(
+                            color: Theme.of(context).cardColor,
+                          ),
+                        ),
+                      },
+                      AspectRatio(
+                        aspectRatio: _aspectRatio,
+                        child: Container(
+                          color: Theme.of(context).cardColor,
+                        ),
                       ),
-                    ))
-            : Image.network(
-                draggableWidget.gif.images!.fixedWidth.webp!,
-                gaplessPlayback: true,
-                fit: BoxFit.fill,
-                loadingBuilder: (context, child, loadingProgress) => loading(),
-                errorBuilder: (context, error, stackTrace) => loading(),
-              )
-        : loading();
+                    ),
+            ),
+          )
+        : draggableWidget.gif.images != null &&
+                draggableWidget.gif.images!.fixedWidth.webp != null
+            ? true
+                ? CachedNetworkImage(
+                    imageUrl: draggableWidget.gif.images!.fixedWidth.webp!,
+                    placeholder: (context, url) => loading(),
+                    errorWidget: (context, url, error) => loading(),
+                    imageBuilder: (context, imageProvider) => Container(
+                          //     width: w,
+                          //   height: w / 1.2,
+                          decoration: BoxDecoration(
+                            //     shape: BoxShape.circle,
+                            //  borderRadius: BorderRadius.all( Radius.circular(10)),
+                            image: DecorationImage(
+                                image: imageProvider, fit: BoxFit.fill),
+                          ),
+                        ))
+                : Image.network(
+                    draggableWidget.gif.images!.fixedWidth.webp!,
+                    gaplessPlayback: true,
+                    fit: BoxFit.fill,
+                    loadingBuilder: (context, child, loadingProgress) =>
+                        loading(),
+                    errorBuilder: (context, error, stackTrace) => loading(),
+                  )
+            : loading();
   }
 
   /// text widget
@@ -380,5 +441,18 @@ class DraggableWidget extends StatelessWidget {
 
     /// create new text item
     controlNotifier.isTextEditing = !controlNotifier.isTextEditing;
+  }
+
+//////////////////
+  TValue? case2<TOptionType, TValue>(
+    TOptionType selectedOption,
+    Map<TOptionType, TValue> branches, [
+    TValue? defaultValue = null,
+  ]) {
+    if (!branches.containsKey(selectedOption)) {
+      return defaultValue;
+    }
+
+    return branches[selectedOption];
   }
 }
