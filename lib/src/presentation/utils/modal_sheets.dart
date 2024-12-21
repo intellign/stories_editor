@@ -211,173 +211,192 @@ Future<bool> exitDialog({
 }) async {
   return (await showDialog(
         context: context,
-        barrierColor: Colors.black38,
+        barrierColor: Colors.transparent,
         barrierDismissible: true,
-        builder: (BuildContext dialogContext) => Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0.0,
-          insetAnimationDuration: const Duration(milliseconds: 300),
-          insetAnimationCurve: Curves.ease,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Container(
-              padding: const EdgeInsets.only(
-                  top: 25, bottom: 5, right: 15, left: 15),
-              alignment: Alignment.center,
-              height: 280,
-              decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  color: HexColor.fromHex('#262626'),
-                  borderRadius: BorderRadius.circular(20),
+        builder: (BuildContext dialogContext) => BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 5.7, sigmaY: 5.7),
+            child: Dialog(
+              backgroundColor: Colors.black.withOpacity(0.7),
+              elevation: 10.0,
+              insetAnimationDuration: const Duration(milliseconds: 300),
+              insetAnimationCurve: Curves.ease,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 23),
+                child: Container(
+                  padding: const EdgeInsets.only(
+                      top: 25, bottom: 5, right: 15, left: 15),
+                  alignment: Alignment.center,
+                  height: 280,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(25),
+                    /*   color: HexColor.fromHex('#262626'),
                   boxShadow: const [
                     BoxShadow(
                         color: Colors.white10,
                         offset: Offset(0, 1),
                         blurRadius: 4),
-                  ]),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text(
-                    'Discard Edits?',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        letterSpacing: 0.5),
+                  ]*/
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Text(
-                    "If you go back now, you'll lose all the edits you've made.",
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white54,
-                        letterSpacing: 0.1),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(
-                    height: 40,
-                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      const Text(
+                        'Discard Edits?',
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0.5),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      const Text(
+                        "If you go back now, you'll lose all the edits you've made.",
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white54,
+                            letterSpacing: 0.1),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(
+                        height: 40,
+                      ),
 
-                  /// discard
-                  AnimatedOnTapButton(
-                    onTap: () async {
-                      _resetDefaults(context: context);
-                      Navigator.of(dialogContext).pop(true);
-                    },
-                    child: Text(
-                      'Discard',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.redAccent.shade200,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.1),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 22,
-                    child: Divider(
-                      color: Colors.white10,
-                    ),
-                  ),
+                      /// discard
+                      //    AnimatedOnTapButton(
+                      GestureDetector(
+                        onTap: () async {
+                          _resetDefaults(context: context);
+                          Navigator.of(dialogContext).pop(true);
+                        },
+                        child: Container(
+                            width: MediaQuery.of(context).size.width / 1.9,
+                            child: Text(
+                              'Discard',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.redAccent.shade200,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.1),
+                              textAlign: TextAlign.center,
+                            )),
+                      ),
+                      const SizedBox(
+                        height: 22,
+                        child: Divider(
+                          color: Colors.white10,
+                        ),
+                      ),
 
-                  /// save and exit
-                  showSaveDraftOption == false
-                      ? SizedBox()
-                      : AnimatedOnTapButton(
-                          onTap: () async {
-                            final _paintingProvider =
-                                Provider.of<PaintingNotifier>(context,
-                                    listen: false);
-                            final _widgetProvider =
-                                Provider.of<DraggableWidgetNotifier>(context,
-                                    listen: false);
-                            if (_paintingProvider.lines.isNotEmpty ||
-                                _widgetProvider.draggableWidget.isNotEmpty) {
-                              if (recordCallback != null &&
-                                  (_widgetProvider.draggableWidget.indexWhere(
-                                          (element) =>
-                                              element.animationType !=
-                                                  TextAnimationType.none ||
-                                              element.type == ItemType.gif ||
-                                              element.type == ItemType.video ||
-                                              element.type == ItemType.audio) >
-                                      -1)) {
-                                await recordCallback!(null, false, false);
-                                _dispose(
-                                    context: dialogContext,
-                                    message:
-                                        'Successfully saved'); //add error- check response
-                              } else {
-                                /// save image
-                                var response = await takePicture(
-                                    contentKey: contentKey,
-                                    context: context,
-                                    saveToGallery: saveDraftCallback != null
-                                        ? false
-                                        : true);
-                                if (response) {
-                                  _dispose(
-                                      context: dialogContext,
-                                      message: 'Successfully saved');
-                                  if (saveDraftCallback != null &&
-                                      response is String) {
-                                    saveDraftCallback(response);
+                      /// save and exit
+                      showSaveDraftOption == false
+                          ? SizedBox()
+                          : //    AnimatedOnTapButton(
+                          GestureDetector(
+                              onTap: () async {
+                                final _paintingProvider =
+                                    Provider.of<PaintingNotifier>(context,
+                                        listen: false);
+                                final _widgetProvider =
+                                    Provider.of<DraggableWidgetNotifier>(
+                                        context,
+                                        listen: false);
+                                if (_paintingProvider.lines.isNotEmpty ||
+                                    _widgetProvider
+                                        .draggableWidget.isNotEmpty) {
+                                  if (recordCallback != null &&
+                                      (_widgetProvider.draggableWidget
+                                              .indexWhere((element) =>
+                                                  element.animationType !=
+                                                      TextAnimationType.none ||
+                                                  element.type ==
+                                                      ItemType.gif ||
+                                                  element.type ==
+                                                      ItemType.video ||
+                                                  element.type ==
+                                                      ItemType.audio) >
+                                          -1)) {
+                                    await recordCallback!(null, false, false);
+                                    _dispose(
+                                        context: dialogContext,
+                                        message:
+                                            'Successfully saved'); //add error- check response
+                                  } else {
+                                    /// save image
+                                    var response = await takePicture(
+                                        contentKey: contentKey,
+                                        context: context,
+                                        saveToGallery: saveDraftCallback != null
+                                            ? false
+                                            : true);
+                                    if (response) {
+                                      _dispose(
+                                          context: dialogContext,
+                                          message: 'Successfully saved');
+                                      if (saveDraftCallback != null &&
+                                          response is String) {
+                                        saveDraftCallback(response);
+                                      }
+                                    } else {
+                                      _dispose(
+                                          context: dialogContext,
+                                          message: 'Error');
+                                    }
                                   }
                                 } else {
                                   _dispose(
-                                      context: dialogContext, message: 'Error');
+                                      context: dialogContext,
+                                      message: 'Draft Empty');
                                 }
-                              }
-                            } else {
-                              _dispose(
-                                  context: dialogContext,
-                                  message: 'Draft Empty');
-                            }
-                          },
-                          child: Text(
-                            'Save Draft',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                  showSaveDraftOption == false
-                      ? SizedBox()
-                      : SizedBox(
-                          height: 22,
-                          child: Divider(
-                            color: Colors.white10,
-                          ),
-                        ),
+                              },
+                              child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width / 1.9,
+                                  child: Text(
+                                    'Save Draft',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5),
+                                    textAlign: TextAlign.center,
+                                  )),
+                            ),
+                      showSaveDraftOption == false
+                          ? SizedBox()
+                          : SizedBox(
+                              height: 22,
+                              child: Divider(
+                                color: Colors.white10,
+                              ),
+                            ),
 
-                  ///cancel
-                  AnimatedOnTapButton(
-                    onTap: () {
-                      Navigator.of(dialogContext).pop(false);
-                    },
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5),
-                      textAlign: TextAlign.center,
-                    ),
+                      ///cancel
+                      //    AnimatedOnTapButton(
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(dialogContext).pop(false);
+                        },
+                        child: Container(
+                            width: MediaQuery.of(context).size.width / 1.9,
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5),
+                              textAlign: TextAlign.center,
+                            )),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
+            )),
       )) ??
       false;
 }
