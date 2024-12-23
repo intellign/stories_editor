@@ -133,66 +133,70 @@ showAddMoreMedia(BuildContext context, ScrollNotifier scrollNotifier,
             expand: true,
             builder: (BuildContext context, ScrollController scrollController) {
               return Center(
-                child: Container(
-                  decoration: BoxDecoration(
+                child: Stack(children: [
+                  Container(
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height,
+                        maxWidth: MediaQuery.of(context).size.width),
+                    decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(16),
+                            topLeft: Radius.circular(16)),
+                        boxShadow: [
+                          BoxShadow(
+                              blurRadius: 10,
+                              spreadRadius: 16,
+                              color: (whiteTheme ? Colors.white : Colors.black)
+                                  .withOpacity(0.3),
+                              offset: const Offset(0, 16))
+                        ]),
+                    child: ClipRRect(
                       borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(16),
                           topLeft: Radius.circular(16)),
-                      boxShadow: [
-                        BoxShadow(
-                            blurRadius: 10,
-                            spreadRadius: 16,
-                            color: (whiteTheme ? Colors.white : Colors.black)
-                                .withOpacity(0.3),
-                            offset: const Offset(0, 16))
-                      ]),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(16),
-                        topLeft: Radius.circular(16)),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(
-                        sigmaX: 40.0,
-                        sigmaY: 40.0,
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: (whiteTheme ? Colors.white : Colors.black)
-                                .withOpacity(0.5),
-                            borderRadius: const BorderRadius.only(
-                                topRight: Radius.circular(16),
-                                topLeft: Radius.circular(16)),
-                            border: Border.all(
-                              width: 1.5,
-                              color: Colors.transparent,
-                            )),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: Container(
-                                  width: 40,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                      color: whiteTheme
-                                          ? Colors.grey
-                                          : Colors.white54,
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10))),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 40,
-                              ),
-                              addMediaTopWidget,
-                            ],
+                      child: BackdropFilter(
+                          filter: ui.ImageFilter.blur(
+                            sigmaX: 10.0,
+                            sigmaY: 10.0,
                           ),
-                        ),
-                      ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color:
+                                    (whiteTheme ? Colors.white : Colors.black)
+                                        .withOpacity(0.5),
+                                borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(16),
+                                    topLeft: Radius.circular(16)),
+                                border: Border.all(
+                                  width: 1.5,
+                                  color: Colors.transparent,
+                                )),
+                          )),
                     ),
                   ),
-                ),
+                  Center(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Container(
+                            width: 40,
+                            height: 5,
+                            decoration: BoxDecoration(
+                                color:
+                                    whiteTheme ? Colors.grey : Colors.white54,
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(10))),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 40,
+                        ),
+                        addMediaTopWidget,
+                      ],
+                    ),
+                  ),
+                ]),
               );
             },
           ),
