@@ -54,6 +54,10 @@ dependencies:
     git:
       url: https://github.com/intellign/render
 
+  flutter_inset_shadow:
+    git:
+      url: https://github.com/intellign/flutter_inset_shadow
+
   #screen_recorder: ^0.2.0
   
   #gallery_media_picker: ^0.1.0
