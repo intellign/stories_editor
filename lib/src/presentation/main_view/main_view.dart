@@ -186,6 +186,7 @@ class _MainViewState extends State<MainView> {
 
       if (widget.starterFile != null) {
         Future.delayed(Duration(milliseconds: 1500), () async {
+          if (!mounted || widget.starterFile == null) return;
           _control.mediaPath = widget.starterFile!.path;
           var _itemProvider =
               Provider.of<DraggableWidgetNotifier>(context, listen: false);
@@ -205,11 +206,18 @@ class _MainViewState extends State<MainView> {
           if (isVideo) {
             VideoPlayerController vc =
                 VideoPlayerController.file(widget.starterFile!);
-            await vc.initialize();
-            duration = vc.value.duration;
-            vc.dispose();
-            if (duration != null) {
-              _itemProvider.draggableWidget[0].duration = duration;
+            try {
+              await vc.initialize();
+              duration = vc.value.duration;
+              if (!mounted) return;
+              if (duration != null) {
+                _itemProvider.draggableWidget[0].duration = duration;
+                _itemProvider.updatedNeedsRefresh();
+              }
+            } catch (error) {
+              debugPrint('Unable to read starter video duration: $error');
+            } finally {
+              await vc.dispose();
             }
           }
         });
@@ -267,15 +275,17 @@ class _MainViewState extends State<MainView> {
     setState(() {
       _showDialog = true;
     });
-    if (duration == null) {
-      int longestDuration = 0;
-      itemProvider.draggableWidget.forEach((element) {
-        if (element.duration != null &&
-            element.duration!.inSeconds > longestDuration) {
-          longestDuration = element.duration!.inSeconds;
+    if (duration == null || duration < 1) {
+      var longestDuration = Duration.zero;
+      for (final element in itemProvider.draggableWidget) {
+        if (element.duration != null && element.duration! > longestDuration) {
+          longestDuration = element.duration!;
         }
-      });
-      duration = longestDuration > 0 ? longestDuration : 5;
+      }
+      // Round up fractional seconds so short clips are never truncated to zero.
+      duration = longestDuration > Duration.zero
+          ? (longestDuration.inMilliseconds + 999) ~/ 1000
+          : 5;
     }
 
     final stream = controller.captureMotionWithStream(
