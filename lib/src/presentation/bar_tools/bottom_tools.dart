@@ -83,7 +83,7 @@ class _BottomToolsState extends State<BottomTools> {
         return Container(
           decoration: const BoxDecoration(color: Colors.transparent),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 40.h),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             child: controlNotifier.isPainting
                 ? Padding(
                     padding: EdgeInsets.only(bottom: 30),
@@ -230,7 +230,7 @@ class _BottomToolsState extends State<BottomTools> {
                         Expanded(
                           child: Center(
                             child: Container(
-                                alignment: Alignment.bottomCenter,
+                                alignment: Alignment.center,
                                 child: GestureDetector(
                                   onVerticalDragStart:
                                       controlNotifier.mediaPath.isNotEmpty
