@@ -483,6 +483,8 @@ class _VideoLayer extends StatefulWidget {
 
 class _VideoLayerState extends State<_VideoLayer> {
   VideoPlayerController? _controller;
+  bool _failed = false;
+  int _generation = 0;
 
   @override
   void initState() {
@@ -497,27 +499,39 @@ class _VideoLayerState extends State<_VideoLayer> {
   }
 
   Future<void> _load() async {
+    final generation = ++_generation;
     final previous = _controller;
     _controller = null;
-    if (previous != null) previous.dispose();
-    if (!mounted || widget.path.isEmpty) return;
+    _failed = false;
+    if (previous != null) {
+      await previous.dispose();
+    }
+    if (!mounted || generation != _generation || widget.path.isEmpty) return;
+
     final controller = VideoPlayerController.file(File(widget.path));
     _controller = controller;
     try {
       await controller.initialize();
-      if (!mounted || _controller != controller) return;
+      if (!mounted || generation != _generation) {
+        if (_controller == controller) _controller = null;
+        await controller.dispose();
+        return;
+      }
       await controller.setLooping(true);
       await controller.setVolume(0);
       await controller.play();
       if (mounted) setState(() {});
     } catch (error) {
       debugPrint('Stories editor video layer failed: $error');
-      if (mounted && _controller == controller) setState(() {});
+      if (mounted && generation == _generation) {
+        setState(() => _failed = true);
+      }
     }
   }
 
   @override
   void dispose() {
+    _generation++;
     _controller?.dispose();
     super.dispose();
   }
@@ -525,6 +539,9 @@ class _VideoLayerState extends State<_VideoLayer> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    if (_failed) {
+      return const Center(child: Icon(Icons.error_outline, color: Colors.white70));
+    }
     if (controller == null || !controller.value.isInitialized) {
       return const SizedBox.expand(
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
