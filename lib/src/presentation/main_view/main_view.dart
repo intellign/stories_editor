@@ -744,7 +744,7 @@ class _MainViewState extends State<MainView> {
                                 ignoring: true,
                                 child: Align(
                                   alignment: const Alignment(0, -0.1),
-                                  child: Text('Tap to type',
+                                  child: Text('Tap to add text',
                                       style: TextStyle(
                                           fontFamily: 'Alegreya',
                                           package: 'stories_editor',
