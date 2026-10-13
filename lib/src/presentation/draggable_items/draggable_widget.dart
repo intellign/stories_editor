@@ -157,7 +157,11 @@ class DraggableWidget extends StatelessWidget {
         break;
 
       case ItemType.video:
-        overlayWidget = _VideoLayer(path: draggableWidget.url);
+        overlayWidget = SizedBox(
+          width: screenUtil.screenWidth,
+          height: screenUtil.screenHeight * 0.75,
+          child: _VideoLayer(path: draggableWidget.url),
+        );
         break;
       case ItemType.audio:
         overlayWidget = const Center();
@@ -495,7 +499,7 @@ class _VideoLayerState extends State<_VideoLayer> {
   Future<void> _load() async {
     final previous = _controller;
     _controller = null;
-    if (previous != null) await previous.dispose();
+    if (previous != null) previous.dispose();
     if (!mounted || widget.path.isEmpty) return;
     final controller = VideoPlayerController.file(File(widget.path));
     _controller = controller;
