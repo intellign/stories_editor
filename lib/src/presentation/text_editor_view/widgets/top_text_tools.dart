@@ -19,8 +19,7 @@ class TopTextTools extends StatelessWidget {
             children: [
               Expanded(child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: Row(children: [
-              Row(
+                child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   /// font family / font color
