@@ -778,14 +778,14 @@ class _MainViewState extends State<MainView> {
                                     saveDraftCallback: widget.saveDraftCallback,
                                     recordCallback: (duration, doneCallbackBool,
                                         saveToGallery) async {
-                                      setState(() {
-                                        hide4Record = true;
-                                      });
-                                      await recordWidget(itemProvider, duration,
+                                      if (!mounted) return;
+                                      setState(() => hide4Record = true);
+                                      try {
+                                        await recordWidget(itemProvider, duration,
                                           doneCallbackBool, saveToGallery);
-                                      setState(() {
-                                        hide4Record = false;
-                                      });
+                                      } finally {
+                                        if (mounted) setState(() => hide4Record = false);
+                                      }
                                     },
                                     addMediaTopWidget: addMediaTopWidget(
                                         scrollProvider,
@@ -837,23 +837,19 @@ class _MainViewState extends State<MainView> {
                               whiteTheme: whiteTheme,
                             );
                           },
-                          onDone: (bytes) {
-                            setState(() {
-                              widget.onDone!(bytes);
-                            });
-                          },
+                          onDone: (bytes) => widget.onDone?.call(bytes),
                           onDoneButtonStyle: widget.onDoneButtonStyle,
                           editorBackgroundColor: widget.editorBackgroundColor,
                           recordCallback: (duration, doneCallbackBool,
                               saveToGallery) async {
-                            setState(() {
-                              hide4Record = true;
-                            });
-                            await recordWidget(itemProvider, duration,
+                            if (!mounted) return;
+                                      setState(() => hide4Record = true);
+                                      try {
+                                        await recordWidget(itemProvider, duration,
                                 doneCallbackBool, saveToGallery);
-                            setState(() {
-                              hide4Record = false;
-                            });
+                                      } finally {
+                                        if (mounted) setState(() => hide4Record = false);
+                                      }
                           },
                         ),
                     ],
@@ -998,14 +994,14 @@ class _MainViewState extends State<MainView> {
             showSaveDraftOption: widget.showSaveDraftOption,
             saveDraftCallback: widget.saveDraftCallback,
             recordCallback: (duration, doneCallbackBool, saveToGallery) async {
-              setState(() {
-                hide4Record = true;
-              });
-              await recordWidget(
+              if (!mounted) return;
+                                      setState(() => hide4Record = true);
+                                      try {
+                                        await recordWidget(
                   itemProvider, duration, doneCallbackBool, saveToGallery);
-              setState(() {
-                hide4Record = false;
-              });
+                                      } finally {
+                                        if (mounted) setState(() => hide4Record = false);
+                                      }
             },
           );
     }
