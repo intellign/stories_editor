@@ -3,6 +3,8 @@
 
 import 'dart:io';
 import 'dart:async';
+import 'package:ffmpeg_kit_flutter_new_https/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_https/return_code.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -317,7 +319,8 @@ class _MainViewState extends State<MainView> {
       if (mounted) Fluttertoast.showToast(msg: 'Unable to render video. Try again.');
       return;
     }
-    await saveResult0(result as RenderResult, doneCallbackBool, saveToGallery);
+    await saveResult0(result as RenderResult, doneCallbackBool, saveToGallery,
+        itemProvider: itemProvider);
     } catch (error) {
       debugPrint('Stories MP4 export failed: $error');
       if (mounted) Fluttertoast.showToast(msg: 'Unable to export video. Try again.');
@@ -351,11 +354,42 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<void> saveResult0(
-      RenderResult result, bool doneCallbackBool, bool saveToGallery) async {
-    final path = result.output.path;
+      RenderResult result, bool doneCallbackBool, bool saveToGallery,
+      {DraggableWidgetNotifier? itemProvider}) async {
+    var path = result.output.path;
     final output = File(path);
     if (!await output.exists() || await output.length() == 0) {
       throw StateError('Video renderer returned an empty output.');
+    }
+
+    // The frame renderer produces silent MP4s. Reattach the original video
+    // soundtrack when a video background exists; optional audio mapping keeps
+    // silent camera clips valid as well.
+    final videoItems = itemProvider?.draggableWidget.where(
+      (item) => item.type == ItemType.video && item.isStoriesBackground,
+    );
+    if (videoItems != null && videoItems.isNotEmpty) {
+      final sourcePath = videoItems.first.url;
+      if (sourcePath.isNotEmpty && await File(sourcePath).exists()) {
+        final destination = p.join(
+          (await getTemporaryDirectory()).path,
+          'stories_with_audio_${DateTime.now().microsecondsSinceEpoch}.mp4',
+        );
+        final session = await FFmpegKit.executeWithArguments([
+          '-y', '-i', path, '-i', sourcePath,
+          '-map', '0:v:0', '-map', '1:a:0?',
+          '-c:v', 'copy', '-c:a', 'aac', '-shortest',
+          '-movflags', '+faststart', destination,
+        ]);
+        final returnCode = await session.getReturnCode();
+        if (ReturnCode.isSuccess(returnCode) &&
+            await File(destination).exists() &&
+            await File(destination).length() > 0) {
+          path = destination;
+        } else {
+          debugPrint('Story audio mux unavailable; retaining silent export.');
+        }
+      }
     }
 
     if (saveToGallery) {
