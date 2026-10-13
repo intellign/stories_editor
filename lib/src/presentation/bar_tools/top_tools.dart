@@ -47,10 +47,13 @@ class _TopToolsState extends State<TopTools> {
       builder: (_, controlNotifier, paintingNotifier, itemNotifier, __) {
         return SafeArea(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 20.w),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: const BoxDecoration(color: Colors.transparent),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 /// close button
@@ -187,6 +190,7 @@ class _TopToolsState extends State<TopTools> {
                       !controlNotifier.isTextEditing,
                 ),
               ],
+              ),
             ),
           ),
         );
