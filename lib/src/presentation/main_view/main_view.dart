@@ -279,7 +279,7 @@ class _MainViewState extends State<MainView> {
     }
 
     final stream = controller.captureMotionWithStream(
-      Duration(seconds: duration ?? 5),
+      Duration(seconds: (duration ?? 5) < 1 ? 5 : duration!),
       settings: const MotionSettings(
           //  pixelRatio: 5,
           //frameRate: 20, //30
@@ -342,50 +342,27 @@ class _MainViewState extends State<MainView> {
 
   Future<void> saveResult0(
       RenderResult result, bool doneCallbackBool, bool saveToGallery) async {
-    String path = result.output.path;
+    final path = result.output.path;
+    final output = File(path);
+    if (!await output.exists() || await output.length() == 0) {
+      throw StateError('Video renderer returned an empty output.');
+    }
+
     if (saveToGallery) {
-      await ImageGallerySaver.saveFile(path,
-              name: "stories_creator${DateTime.now()}.mp4")
-          .then((value) {
-        if (value['isSuccess'] == true) {
-          debugPrint(value['filePath']);
+      final saved = await ImageGallerySaver.saveFile(
+        path,
+        name: 'stories_creator_${DateTime.now().millisecondsSinceEpoch}.mp4',
+      );
+      if (saved is! Map || saved['isSuccess'] != true) {
+        throw StateError('Could not save video to the gallery.');
+      }
+    }
 
-          if (!doneCallbackBool) {
-            Fluttertoast.showToast(
-                msg: '👍', gravity: ToastGravity.CENTER); //'Successfully saved'
-          }
-
-          if (widget.onDone != null && doneCallbackBool) {
-            widget.onDone!(path);
-          }
-        } else {
-          debugPrint(value['errorMessage']);
-          Fluttertoast.showToast(
-              msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
-        }
-      }).whenComplete(() {
-        setState(() {
-          _showDialog = false;
-        });
-      }).catchError((e) {
-        setState(() {
-          _showDialog = false;
-        });
-        Fluttertoast.showToast(
-            msg: '⚠️⚠️', gravity: ToastGravity.CENTER); //'Error'
-      });
+    if (!mounted) return;
+    if (doneCallbackBool) {
+      widget.onDone?.call(path);
     } else {
-      if (!doneCallbackBool) {
-        Fluttertoast.showToast(
-            msg: '👍', gravity: ToastGravity.CENTER); //'Successfully saved'
-      }
-
-      if (widget.onDone != null && doneCallbackBool) {
-        widget.onDone!(path);
-      }
-      setState(() {
-        _showDialog = false;
-      });
+      Fluttertoast.showToast(msg: 'Saved', gravity: ToastGravity.CENTER);
     }
   }
 
