@@ -5,6 +5,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:align_positioned/align_positioned.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 //import 'package:modal_gif_picker/modal_gif_picker.dart';
 import 'package:provider/provider.dart';
@@ -156,7 +157,7 @@ class DraggableWidget extends StatelessWidget {
         break;
 
       case ItemType.video:
-        overlayWidget = const Center();
+        overlayWidget = _VideoLayer(path: draggableWidget.url);
         break;
       case ItemType.audio:
         overlayWidget = const Center();
@@ -463,5 +464,77 @@ class DraggableWidget extends StatelessWidget {
     }
 
     return branches[selectedOption];
+  }
+}
+
+/// Plays source video inside the creative canvas so text, stickers and
+/// drawings can be composed over moving footage and captured by Render.
+class _VideoLayer extends StatefulWidget {
+  final String path;
+  const _VideoLayer({required this.path});
+
+  @override
+  State<_VideoLayer> createState() => _VideoLayerState();
+}
+
+class _VideoLayerState extends State<_VideoLayer> {
+  VideoPlayerController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _VideoLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.path != widget.path) _load();
+  }
+
+  Future<void> _load() async {
+    final previous = _controller;
+    _controller = null;
+    if (previous != null) await previous.dispose();
+    if (!mounted || widget.path.isEmpty) return;
+    final controller = VideoPlayerController.file(File(widget.path));
+    _controller = controller;
+    try {
+      await controller.initialize();
+      if (!mounted || _controller != controller) return;
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+      await controller.play();
+      if (mounted) setState(() {});
+    } catch (error) {
+      debugPrint('Stories editor video layer failed: $error');
+      if (mounted && _controller == controller) setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      return const SizedBox.expand(
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: controller.value.size.width,
+          height: controller.value.size.height,
+          child: VideoPlayer(controller),
+        ),
+      ),
+    );
   }
 }
