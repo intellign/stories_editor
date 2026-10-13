@@ -261,6 +261,9 @@ class _MainViewState extends State<MainView> {
 
   Future<void> recordWidget(DraggableWidgetNotifier itemProvider, int? duration,
       bool doneCallbackBool, bool saveToGallery) async {
+    if (_exporting) return;
+    _exporting = true;
+    try {
     setState(() {
       _showDialog = true;
     });
@@ -301,13 +304,17 @@ class _MainViewState extends State<MainView> {
     final result = await stream
         .firstWhere((event) => event.isResult || event.isFatalError);
     if (result.isFatalError) {
-      if (!mounted) return;
-      setState(() {
-        _showDialog = false;
-      });
+      if (mounted) Fluttertoast.showToast(msg: 'Unable to render video. Try again.');
       return;
     }
     await saveResult0(result as RenderResult, doneCallbackBool, saveToGallery);
+    } catch (error) {
+      debugPrint('Stories MP4 export failed: $error');
+      if (mounted) Fluttertoast.showToast(msg: 'Unable to export video. Try again.');
+    } finally {
+      _exporting = false;
+      if (mounted) setState(() => _showDialog = false);
+    }
 
     /*   final result0 = await controller.captureMotion(
       Duration(seconds: duration ?? 5),
