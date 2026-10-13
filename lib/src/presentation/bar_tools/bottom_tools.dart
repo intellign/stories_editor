@@ -11,7 +11,7 @@ import 'package:stories_editor/src/presentation/widgets/animated_onTap_button.da
 import 'package:stories_editor/src/presentation/widgets/color_selector.dart';
 import 'package:stories_editor/src/presentation/utils/constants/app_enums.dart';
 
-class BottomTools extends StatelessWidget {
+class BottomTools extends StatefulWidget {
   final GlobalKey contentKey;
   final Function(String imageUri) onDone;
   final Widget? onDoneButtonStyle;
@@ -32,6 +32,37 @@ class BottomTools extends StatelessWidget {
       this.recordCallback,
       this.editorBackgroundColor})
       : super(key: key);
+
+  @override
+  State<BottomTools> createState() => _BottomToolsState();
+}
+
+class _BottomToolsState extends State<BottomTools> {
+  bool _exporting = false;
+
+  Future<void> _finish(DraggableWidgetNotifier itemNotifier) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final animated = itemNotifier.draggableWidget.any((element) =>
+          element.animationType != TextAnimationType.none ||
+          element.type == ItemType.gif ||
+          element.type == ItemType.video ||
+          element.type == ItemType.audio);
+      if (animated && widget.recordCallback != null) {
+        widget.recordCallback!(null, true, false);
+      } else {
+        final path = await takePicture(
+          widget.contentKey: widget.contentKey,
+          context: context,
+          saveToGallery: false,
+        );
+        if (path != null) widget.onDone(path);
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +118,8 @@ class BottomTools extends StatelessWidget {
                                                   ),
                                                 ))
                                             : CoverThumbnail(
-                                                permissionWidget:
-                                                    permissionWidget,
+                                                widget.permissionWidget:
+                                                    widget.permissionWidget,
                                                 thumbnailQuality: 150,
                                                 viewIndex: scrollNotifier
                                                     .pageController.page!
@@ -212,7 +243,7 @@ class BottomTools extends StatelessWidget {
                                             }
                                           : null,
                                   onTap: () {
-                                    showAddMoreMediaF();
+                                    widget.showAddMoreMediaF();
                                   },
                                   child: controlNotifier.middleBottomWidget,
                                   //Icon(Icons.add_box_rounded,color: Colors.white,size: 17,)
@@ -251,35 +282,8 @@ class BottomTools extends StatelessWidget {
                           child: Transform.scale(
                             scale: 0.9,
                             child: AnimatedOnTapButton(
-                                onTap: () async {
-                                  String pngUri;
-                                  if (recordCallback != null &&
-                                      (itemNotifier.draggableWidget.indexWhere(
-                                              (element) =>
-                                                  element.animationType !=
-                                                      TextAnimationType.none ||
-                                                  element.type ==
-                                                      ItemType.gif ||
-                                                  element.type ==
-                                                      ItemType.video ||
-                                                  element.type ==
-                                                      ItemType.audio) >
-                                          -1)) {
-                                    recordCallback!(null, true, false);
-                                  } else {
-                                    await takePicture(
-                                            contentKey: contentKey,
-                                            context: context,
-                                            saveToGallery: false)
-                                        .then((bytes) {
-                                      if (bytes != null) {
-                                        pngUri = bytes;
-                                        onDone(pngUri);
-                                      } else {}
-                                    });
-                                  }
-                                },
-                                child: onDoneButtonStyle ??
+                                onTap: () => _finish(itemNotifier),
+                                child: widget.onDoneButtonStyle ??
                                     Container(
                                       padding: const EdgeInsets.only(
                                           left: 12,
