@@ -259,7 +259,7 @@ class _MainViewState extends State<MainView> {
   // late Stream<RenderNotifier> stream;
   //Widget? wid;
 
-  recordWidget(DraggableWidgetNotifier itemProvider, int? duration,
+  Future<void> recordWidget(DraggableWidgetNotifier itemProvider, int? duration,
       bool doneCallbackBool, bool saveToGallery) async {
     setState(() {
       _showDialog = true;
@@ -272,7 +272,7 @@ class _MainViewState extends State<MainView> {
           longestDuration = element.duration!.inSeconds;
         }
       });
-      duration = longestDuration;
+      duration = longestDuration > 0 ? longestDuration : 5;
     }
 
     final stream = controller.captureMotionWithStream(
@@ -301,12 +301,13 @@ class _MainViewState extends State<MainView> {
     final result = await stream
         .firstWhere((event) => event.isResult || event.isFatalError);
     if (result.isFatalError) {
+      if (!mounted) return;
       setState(() {
         _showDialog = false;
       });
       return;
     }
-    saveResult0(result as RenderResult, doneCallbackBool, saveToGallery);
+    await saveResult0(result as RenderResult, doneCallbackBool, saveToGallery);
 
     /*   final result0 = await controller.captureMotion(
       Duration(seconds: duration ?? 5),
@@ -332,7 +333,7 @@ class _MainViewState extends State<MainView> {
 //VideoPlayer(snapshot.data!); // show result as video
   }
 
-  saveResult0(
+  Future<void> saveResult0(
       RenderResult result, bool doneCallbackBool, bool saveToGallery) async {
     String path = result.output.path;
     if (saveToGallery) {
