@@ -17,7 +17,7 @@ class BottomTools extends StatefulWidget {
   final Widget? onDoneButtonStyle;
   final Widget? permissionWidget;
   final Function() showAddMoreMediaF;
-  final Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
+  final Future<void> Function(int? duration, bool doneCallbackBool, bool saveToGallery)?
       recordCallback;
 
   /// editor background color
@@ -50,14 +50,14 @@ class _BottomToolsState extends State<BottomTools> {
           element.type == ItemType.video ||
           element.type == ItemType.audio);
       if (animated && widget.recordCallback != null) {
-        widget.recordCallback!(null, true, false);
+        await widget.recordCallback!(null, true, false);
       } else {
         final path = await takePicture(
           contentKey: widget.contentKey,
           context: context,
           saveToGallery: false,
         );
-        if (path != null) widget.onDone(path);
+        if (path != null && mounted) widget.onDone(path);
       }
     } finally {
       if (mounted) setState(() => _exporting = false);
