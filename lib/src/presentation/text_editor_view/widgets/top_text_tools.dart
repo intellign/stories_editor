@@ -15,9 +15,11 @@ class TopTextTools extends StatelessWidget {
       builder: (context, editorNotifier, child) {
         return Container(
           padding: const EdgeInsets.only(top: 15),
-          child: Stack(
-            alignment: Alignment.topCenter,
+          child: Row(
             children: [
+              Expanded(child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(children: [
               Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -139,10 +141,11 @@ class TopTextTools extends StatelessWidget {
                   ),
                 ],
               ),
+              )),
 
               /// close and create item
               Container(
-                  margin: EdgeInsets.only(left: 12),
+                  margin: EdgeInsets.only(left: 8),
                   child: GestureDetector(
                     onTap: onDone,
                     child: Align(
