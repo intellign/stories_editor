@@ -45,8 +45,9 @@ class ToolButton extends StatelessWidget {
                   HapticFeedback.mediumImpact();
                   onLongPress!();
                 },
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          child: SizedBox(
+            width: 46,
+            height: 46,
             child: Center(
               child: IconTheme.merge(
                 data: const IconThemeData(size: 21, color: Colors.white),
