@@ -82,7 +82,7 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font family selector (bottom)
                         Positioned(
-                          bottom: screenUtil.screenHeight * 0.27,
+                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
                           child: Visibility(
                             visible: editorNotifier.isFontFamily &&
                                 !editorNotifier.isTextAnimation,
@@ -98,7 +98,7 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font color selector (bottom)
                         Positioned(
-                          bottom: screenUtil.screenHeight * 0.27,
+                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
                           child: Visibility(
                               visible: !editorNotifier.isFontFamily &&
                                   !editorNotifier.isTextAnimation,
@@ -113,7 +113,7 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font animation selector (bottom
                         Positioned(
-                          bottom: screenUtil.screenHeight * 0.27,
+                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
                           child: Visibility(
                               visible: editorNotifier.isTextAnimation,
                               child: const Align(
