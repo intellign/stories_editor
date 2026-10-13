@@ -39,23 +39,20 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final ScreenUtil screenUtil = ScreenUtil();
     return Material(
         color: Colors.transparent,
         child: Consumer2<ControlNotifier, TextEditingNotifier>(
           builder: (_, controlNotifier, editorNotifier, __) {
             return Scaffold(
               backgroundColor: Colors.transparent,
+              resizeToAvoidBottomInset: true,
               body: GestureDetector(
                 /// onTap => Close view and create/modify item object
                 onTap: () => _onTap(context, controlNotifier, editorNotifier),
                 onVerticalDragEnd: (details) {
                   FocusScope.of(context).unfocus();
                 },
-                child: Container(
-                    //  decoration:   BoxDecoration(color: Colors.black.withOpacity(0.5)),
-                    height: screenUtil.screenHeight,
-                    width: screenUtil.screenWidth,
+                child: SizedBox.expand(
                     child: Stack(
                       children: [
                         /// text field
@@ -82,14 +79,14 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font family selector (bottom)
                         Positioned(
-                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
+                          bottom: 12,
                           child: Visibility(
                             visible: editorNotifier.isFontFamily &&
                                 !editorNotifier.isTextAnimation,
                             child: const Align(
                               alignment: Alignment.bottomCenter,
                               child: Padding(
-                                padding: EdgeInsets.only(bottom: 20),
+                                padding: EdgeInsets.only(bottom: 0),
                                 child: FontSelector(),
                               ),
                             ),
@@ -98,14 +95,14 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font color selector (bottom)
                         Positioned(
-                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
+                          bottom: 12,
                           child: Visibility(
                               visible: !editorNotifier.isFontFamily &&
                                   !editorNotifier.isTextAnimation,
                               child: const Align(
                                 alignment: Alignment.bottomCenter,
                                 child: Padding(
-                                  padding: EdgeInsets.only(bottom: 20),
+                                  padding: EdgeInsets.only(bottom: 0),
                                   child: ColorSelector(),
                                 ),
                               )),
@@ -113,13 +110,13 @@ class _TextEditorState extends State<TextEditor> {
 
                         /// font animation selector (bottom
                         Positioned(
-                          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 12 : 28,
+                          bottom: 12,
                           child: Visibility(
                               visible: editorNotifier.isTextAnimation,
                               child: const Align(
                                 alignment: Alignment.bottomCenter,
                                 child: Padding(
-                                  padding: EdgeInsets.only(bottom: 20),
+                                  padding: EdgeInsets.only(bottom: 0),
                                   child: AnimationSelector(),
                                 ),
                               )),
