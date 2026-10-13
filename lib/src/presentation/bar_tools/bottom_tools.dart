@@ -53,7 +53,7 @@ class _BottomToolsState extends State<BottomTools> {
         widget.recordCallback!(null, true, false);
       } else {
         final path = await takePicture(
-          widget.contentKey: widget.contentKey,
+          contentKey: widget.contentKey,
           context: context,
           saveToGallery: false,
         );
@@ -118,7 +118,7 @@ class _BottomToolsState extends State<BottomTools> {
                                                   ),
                                                 ))
                                             : CoverThumbnail(
-                                                widget.permissionWidget:
+                                                permissionWidget:
                                                     widget.permissionWidget,
                                                 thumbnailQuality: 150,
                                                 viewIndex: scrollNotifier
