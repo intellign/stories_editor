@@ -44,7 +44,12 @@ class _BottomToolsState extends State<BottomTools> {
     if (_exporting) return;
     setState(() => _exporting = true);
     try {
-      final animated = itemNotifier.draggableWidget.any((element) =>
+      final control = Provider.of<ControlNotifier>(context, listen: false);
+      final background = control.mediaPath.toLowerCase();
+      final videoBackground = background.endsWith('.mp4') ||
+          background.endsWith('.mov') ||
+          background.endsWith('.m4v');
+      final animated = videoBackground || itemNotifier.draggableWidget.any((element) =>
           element.animationType != TextAnimationType.none ||
           element.type == ItemType.gif ||
           element.type == ItemType.video ||
@@ -58,6 +63,13 @@ class _BottomToolsState extends State<BottomTools> {
           saveToGallery: false,
         );
         if (path != null && mounted) widget.onDone(path);
+      }
+    } catch (error) {
+      debugPrint('Stories editor finish failed: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not finish this story. Please try again.')),
+        );
       }
     } finally {
       if (mounted) setState(() => _exporting = false);
